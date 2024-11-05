@@ -1,53 +1,18 @@
-<!DOCTYPE html> <!--dit is de homepage van mijn site-->
-<html> <!--dit is het html element-->
-    <head>
-        <title>het eerste begin</title>
-        <link rel="stylesheet" type="text/css" href="opmaak.css">
-        <meta charset="utf-8">
-    </head>
-    <body>
-
-        <meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Navigation Bar</title>
-	<style type="text/css">
-		*{
-			text-decoration: none;
-		}
-		.navbar{
-			background: rgb(47, 0, 255); font-family: calibri; padding-right: 15px;padding-left: 15px;
-		}
-		.navdiv{
-			display: flex; align-items: center; justify-content: space-between;
-		}
-		.logo a{
-			font-size: 35px; font-weight: 600; color: white;
-		}
-		li{
-			list-style: none; display: inline-block;
-		}
-		li a{
-			color: white; font-size: 18px; font-weight: bold; margin-right: 25px;
-		}
-		button{
-			background-color: black; margin-left: 10px; border-radius: 10px; padding: 10px; width: 90px;
-		}
-		button a{
-			color: white; font-weight: bold; font-size: 15px;
-		}
-	</style>
-</head>
-<body>
-	<nav class="navbar">
-		<div class="navdiv">
-			<div class="logo"><a href="#">Ruben Willemse</a> </div>
-			<ul>
-				<li><a href="index.html">Home</a></li>
-				<li><a href="portfolio.html">portfolio</a></li>
-				<li><a href="cijfers.html">cijfers</a></li>
-			</ul>
-		</div>
-	</nav>
-
-    </body>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../normalize.css" />
+    <link rel="stylesheet" href="style.css" />
+    <title>Transitions</title>
+  </head>
+  <body>
+    <button class="btn">about me</button>
+  </body>
 </html>
