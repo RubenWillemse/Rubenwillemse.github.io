@@ -42,3 +42,22 @@ canvas{
 .hidden{
     display:none;
 }
+.shopGrid{
+    display:flex;
+    justify-content:center;
+    gap:40px;
+    margin:30px;
+}
+
+.skinBox{
+    text-align:center;
+}
+
+.tutorialText{
+    position:absolute;
+    top:50px;
+    width:100%;
+    text-align:center;
+    font-size:28px;
+    color:black;
+}
