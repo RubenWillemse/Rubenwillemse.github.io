@@ -1,18 +1,21 @@
 body{
     margin:0;
-    font-family:Arial, sans-serif;
+    overflow:hidden;
+    font-family:'Segoe UI',sans-serif;
     background:#111;
     color:white;
     text-align:center;
 }
 
 .screen{
-    margin-top:150px;
+    position:absolute;
+    width:100%;
+    top:30%;
 }
 
 h1{
     font-size:70px;
-    background:linear-gradient(45deg,orange,gold);
+    background:linear-gradient(45deg,gold,orange);
     -webkit-background-clip:text;
     -webkit-text-fill-color:transparent;
 }
@@ -23,41 +26,19 @@ button{
     font-size:20px;
     border:none;
     border-radius:15px;
-    background:#222;
+    background:linear-gradient(45deg,#ff512f,#dd2476);
     color:white;
     cursor:pointer;
-    transition:0.3s;
+    transition:0.2s;
 }
 
 button:hover{
-    background:gold;
-    color:black;
     transform:scale(1.1);
 }
 
 canvas{
     display:none;
 }
-
 .hidden{
     display:none;
-}
-.shopGrid{
-    display:flex;
-    justify-content:center;
-    gap:40px;
-    margin:30px;
-}
-
-.skinBox{
-    text-align:center;
-}
-
-.tutorialText{
-    position:absolute;
-    top:50px;
-    width:100%;
-    text-align:center;
-    font-size:28px;
-    color:black;
 }
