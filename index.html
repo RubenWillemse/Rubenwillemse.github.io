@@ -2,40 +2,45 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
-<title>Ultimate Parkour Runner</title>
+<title>Urban Parkour Runner</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div id="menu" class="screen">
-    <h1>ULTIMATE PARKOUR</h1>
-    <button onclick="startGame()">PLAY</button>
-    <button onclick="openTutorial()">TUTORIAL</button>
+<!-- MAIN MENU -->
+<div id="mainMenu" class="screen">
+    <h1>URBAN PARKOUR</h1>
+    <button onclick="openGame()">PLAY</button>
     <button onclick="openShop()">SHOP</button>
+    <button onclick="openTutorial()">TUTORIAL</button>
 </div>
 
-<div id="tutorial" class="screen hidden">
+<!-- SHOP SCREEN -->
+<div id="shopScreen" class="screen hidden">
+    <h2>SHOP</h2>
+    <p>Coins: <span id="coinCount">0</span></p>
+
+    <div class="shopItems">
+        <button onclick="buySkin('black',0)">Default</button>
+        <button onclick="buySkin('red',50)">Red (50)</button>
+        <button onclick="buySkin('blue',100)">Blue (100)</button>
+        <button onclick="buySkin('gold',200)">✨ Gold (200)</button>
+    </div>
+
+    <button onclick="backToMenu()">BACK</button>
+</div>
+
+<!-- TUTORIAL -->
+<div id="tutorialScreen" class="screen hidden">
     <h2>Tutorial</h2>
-    <p>⬆️ = Spring</p>
-    <p>⬆️⬆️ = Backflip</p>
-    <p>⬇️ = Slide</p>
-    <p>💰 Verzamel coins voor skins</p>
-    <button onclick="backMenu()">Terug</button>
+    <p>⬆️ Spring</p>
+    <p>⬆️⬆️ Salto</p>
+    <p>⬇️ Slide</p>
+    <p>💰 Verzamel coins</p>
+    <button onclick="backToMenu()">BACK</button>
 </div>
 
-<div id="shop" class="screen hidden">
-    <h2>Shop</h2>
-    <p>Coins: <span id="coinDisplay">0</span></p>
-
-    <button onclick="buySkin('black',0)">Default</button>
-    <button onclick="buySkin('red',25)">Red (25)</button>
-    <button onclick="buySkin('blue',50)">Blue (50)</button>
-    <button onclick="buySkin('gold',100)">✨ GOLD (100)</button>
-
-    <button onclick="backMenu()">Terug</button>
-</div>
-
-<canvas id="gameCanvas" width="1000" height="450" class="hidden"></canvas>
+<canvas id="gameCanvas"></canvas>
 
 <script>
 const canvas = document.getElementById("gameCanvas");
@@ -44,46 +49,63 @@ const ctx = canvas.getContext("2d");
 let gameRunning = false;
 let speed = 6;
 let gravity = 0.8;
-let score = 0;
 let coins = 0;
+let score = 0;
 
 let player = {
-    x:150,
-    y:300,
+    x:200,
+    y:0,
     width:30,
-    height:70,
+    height:80,
     velocityY:0,
     jumping:false,
     doubleJump:false,
     sliding:false,
     rotation:0,
-    color:"black"
+    color:"black",
+    legAngle:0,
+    armAngle:0
 };
 
 let obstacles=[];
-let coinObjects=[];
+let groundY;
 
-function startGame(){
+function resizeCanvas(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    groundY = canvas.height - 120;
+}
+window.addEventListener("resize",resizeCanvas);
+
+function openGame(){
     document.querySelectorAll(".screen").forEach(s=>s.classList.add("hidden"));
     canvas.classList.remove("hidden");
+    canvas.requestFullscreen();
+    resizeCanvas();
+    player.y = groundY - player.height;
     gameRunning=true;
     gameLoop();
 }
 
-function backMenu(){
-    document.querySelectorAll(".screen").forEach(s=>s.classList.add("hidden"));
-    document.getElementById("menu").classList.remove("hidden");
+function openShop(){
+    hideAll();
+    document.getElementById("shopScreen").classList.remove("hidden");
+    document.getElementById("coinCount").innerText = coins;
 }
 
 function openTutorial(){
-    document.querySelectorAll(".screen").forEach(s=>s.classList.add("hidden"));
-    document.getElementById("tutorial").classList.remove("hidden");
+    hideAll();
+    document.getElementById("tutorialScreen").classList.remove("hidden");
 }
 
-function openShop(){
+function backToMenu(){
+    hideAll();
+    document.getElementById("mainMenu").classList.remove("hidden");
+}
+
+function hideAll(){
     document.querySelectorAll(".screen").forEach(s=>s.classList.add("hidden"));
-    document.getElementById("shop").classList.remove("hidden");
-    document.getElementById("coinDisplay").innerText=coins;
+    canvas.classList.add("hidden");
 }
 
 function buySkin(color,cost){
@@ -97,12 +119,11 @@ function buySkin(color,cost){
 document.addEventListener("keydown",e=>{
     if(e.key==="ArrowUp"){
         if(!player.jumping){
-            player.velocityY=-15;
-            player.jumping=true;
-        }else if(!player.doubleJump){
             player.velocityY=-18;
+            player.jumping=true;
+        } else if(!player.doubleJump){
+            player.velocityY=-20;
             player.doubleJump=true;
-            player.rotation=360;
         }
     }
     if(e.key==="ArrowDown"){
@@ -117,19 +138,11 @@ document.addEventListener("keyup",e=>{
 });
 
 function spawnObstacle(){
+    let types=["cone","wall","barrier"];
+    let type = types[Math.floor(Math.random()*types.length)];
     obstacles.push({
         x:canvas.width,
-        y:320,
-        width:30,
-        height:50
-    });
-}
-
-function spawnCoin(){
-    coinObjects.push({
-        x:canvas.width,
-        y:250,
-        size:15
+        type:type
     });
 }
 
@@ -137,89 +150,140 @@ function update(){
     player.velocityY+=gravity;
     player.y+=player.velocityY;
 
-    if(player.y>=300){
-        player.y=300;
+    if(player.y>=groundY-player.height){
+        player.y=groundY-player.height;
         player.jumping=false;
         player.doubleJump=false;
         player.rotation=0;
     }
 
+    if(player.doubleJump){
+        player.rotation += 15;
+    }
+
+    player.legAngle += 0.1;
+    player.armAngle += 0.1;
+
     obstacles.forEach(o=>o.x-=speed);
-    coinObjects.forEach(c=>c.x-=speed);
 
     obstacles.forEach(o=>{
-        if(player.x<o.x+o.width &&
-           player.x+player.width>o.x &&
-           player.y<o.y+o.height &&
-           player.y+player.height>o.y){
+        let h=60;
+        if(o.type==="cone") h=40;
+        if(player.x < o.x+40 &&
+           player.x+player.width > o.x &&
+           player.y+player.height > groundY-h){
             gameOver();
         }
     });
 
-    coinObjects.forEach((c,i)=>{
-        if(player.x<c.x+c.size &&
-           player.x+player.width>c.x &&
-           player.y<c.y+c.size &&
-           player.y+player.height>c.y){
-            coins++;
-            coinObjects.splice(i,1);
-        }
-    });
-
     if(Math.random()<0.02) spawnObstacle();
-    if(Math.random()<0.015) spawnCoin();
 
     score++;
     if(score%500===0) speed+=0.5;
 }
 
+function drawCity(){
+    // Sky
+    let grad=ctx.createLinearGradient(0,0,0,canvas.height);
+    grad.addColorStop(0,"#87CEEB");
+    grad.addColorStop(1,"#ffffff");
+    ctx.fillStyle=grad;
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    // Buildings
+    ctx.fillStyle="#555";
+    for(let i=0;i<canvas.width;i+=200){
+        ctx.fillRect(i,groundY-200,150,200);
+    }
+
+    // Road
+    ctx.fillStyle="#333";
+    ctx.fillRect(0,groundY,canvas.width,120);
+
+    ctx.strokeStyle="white";
+    ctx.lineWidth=5;
+    for(let i=0;i<canvas.width;i+=80){
+        ctx.beginPath();
+        ctx.moveTo(i,groundY+60);
+        ctx.lineTo(i+40,groundY+60);
+        ctx.stroke();
+    }
+}
+
 function drawPlayer(){
     ctx.save();
-    ctx.translate(player.x+15,player.y+35);
+    ctx.translate(player.x+15,player.y+40);
     ctx.rotate(player.rotation*Math.PI/180);
-    ctx.fillStyle=player.color;
 
-    // Body
-    ctx.fillRect(-15,-35,30,70);
+    ctx.strokeStyle=player.color;
+    ctx.lineWidth=6;
 
-    // Head
+    // body
     ctx.beginPath();
-    ctx.arc(0,-50,15,0,Math.PI*2);
-    ctx.fill();
+    ctx.moveTo(0,-30);
+    ctx.lineTo(0,30);
+    ctx.stroke();
+
+    // head
+    ctx.beginPath();
+    ctx.arc(0,-45,15,0,Math.PI*2);
+    ctx.stroke();
+
+    // arms
+    ctx.beginPath();
+    ctx.moveTo(0,-10);
+    ctx.lineTo(Math.sin(player.armAngle)*20,0);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0,-10);
+    ctx.lineTo(-Math.sin(player.armAngle)*20,0);
+    ctx.stroke();
+
+    // legs
+    ctx.beginPath();
+    ctx.moveTo(0,30);
+    ctx.lineTo(Math.sin(player.legAngle)*20,60);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0,30);
+    ctx.lineTo(-Math.sin(player.legAngle)*20,60);
+    ctx.stroke();
 
     ctx.restore();
 }
 
+function drawObstacles(){
+    obstacles.forEach(o=>{
+        if(o.type==="cone"){
+            ctx.fillStyle="orange";
+            ctx.beginPath();
+            ctx.moveTo(o.x,groundY);
+            ctx.lineTo(o.x+20,groundY-40);
+            ctx.lineTo(o.x+40,groundY);
+            ctx.fill();
+        }
+        if(o.type==="wall"){
+            ctx.fillStyle="#8B4513";
+            ctx.fillRect(o.x,groundY-60,40,60);
+        }
+        if(o.type==="barrier"){
+            ctx.fillStyle="red";
+            ctx.fillRect(o.x,groundY-50,40,20);
+        }
+    });
+}
+
 function draw(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
-
-    // Background gradient
-    let grad=ctx.createLinearGradient(0,0,0,450);
-    grad.addColorStop(0,"#1e3c72");
-    grad.addColorStop(1,"#2a5298");
-    ctx.fillStyle=grad;
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-
-    // Ground
-    ctx.fillStyle="#222";
-    ctx.fillRect(0,370,canvas.width,80);
-
+    drawCity();
     drawPlayer();
+    drawObstacles();
 
-    ctx.fillStyle="#ff3b3b";
-    obstacles.forEach(o=>ctx.fillRect(o.x,o.y,o.width,o.height));
-
-    ctx.fillStyle="gold";
-    coinObjects.forEach(c=>{
-        ctx.beginPath();
-        ctx.arc(c.x,c.y,c.size,0,Math.PI*2);
-        ctx.fill();
-    });
-
-    ctx.fillStyle="white";
+    ctx.fillStyle="black";
     ctx.font="20px Arial";
-    ctx.fillText("Score: "+score,20,30);
-    ctx.fillText("Coins: "+coins,20,60);
+    ctx.fillText("Score: "+score,20,40);
 }
 
 function gameLoop(){

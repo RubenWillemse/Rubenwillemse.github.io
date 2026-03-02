@@ -1,44 +1,42 @@
 body{
     margin:0;
-    font-family:'Segoe UI',sans-serif;
+    font-family:Arial, sans-serif;
     background:#111;
     color:white;
     text-align:center;
 }
 
 .screen{
-    margin-top:100px;
+    margin-top:150px;
 }
 
 h1{
-    font-size:60px;
-    letter-spacing:3px;
-    background:linear-gradient(45deg,gold,orange);
+    font-size:70px;
+    background:linear-gradient(45deg,orange,gold);
     -webkit-background-clip:text;
     -webkit-text-fill-color:transparent;
 }
 
 button{
-    padding:15px 40px;
-    margin:15px;
-    font-size:18px;
+    padding:15px 50px;
+    margin:20px;
+    font-size:20px;
     border:none;
-    border-radius:12px;
-    background:linear-gradient(45deg,#ff512f,#dd2476);
+    border-radius:15px;
+    background:#222;
     color:white;
     cursor:pointer;
-    transition:0.2s;
+    transition:0.3s;
 }
 
 button:hover{
+    background:gold;
+    color:black;
     transform:scale(1.1);
 }
 
 canvas{
-    display:block;
-    margin:20px auto;
-    border-radius:20px;
-    box-shadow:0 0 40px rgba(0,0,0,0.6);
+    display:none;
 }
 
 .hidden{
