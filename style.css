@@ -1,3 +1,4 @@
+/* ====== ALGEMENE PAGINA ====== */
 body{
     margin:0;
     overflow:hidden;
@@ -6,21 +7,32 @@ body{
     text-align:center;
 }
 
+/* ====== CANVAS (ONDER ALLES) ====== */
 canvas{
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
     display:none;
+    z-index:1; /* canvas onder menu's */
 }
 
+/* ====== MENU / SHOP / GAME OVER SCHERMEN ====== */
 .screen{
     position:absolute;
     width:100%;
     top:25%;
+    z-index:10; /* boven canvas */
 }
 
+/* ====== TITELS ====== */
 h1{
     font-size:70px;
     color:#003049;
 }
 
+/* ====== KNOPPEN ====== */
 button{
     padding:15px 50px;
     margin:15px;
@@ -31,16 +43,19 @@ button{
     color:white;
     cursor:pointer;
     transition:.2s;
+    z-index:20;
 }
 
 button:hover{
     transform:scale(1.1);
 }
 
+/* ====== VERBERGEN ====== */
 .hidden{
     display:none;
 }
 
+/* ====== SHOP LAYOUT ====== */
 .shopGrid{
     display:flex;
     justify-content:center;
@@ -56,4 +71,16 @@ button:hover{
     margin-top:10px;
     font-size:18px;
     color:#003049;
+}
+
+/* ====== TUTORIAL OVERLAY ====== */
+#tutorialOverlay{
+    position:absolute;
+    top:40%;
+    width:100%;
+    text-align:center;
+    font-size:40px;
+    font-weight:bold;
+    color:black;
+    z-index:15;
 }
