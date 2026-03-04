@@ -3,52 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Urban Parkour Runner</title>
-<style>
-body{
-    margin:0;
-    overflow:hidden;
-    font-family:Arial, sans-serif;
-    background:#111;
-    color:white;
-    text-align:center;
-}
-
-.screen{
-    position:absolute;
-    width:100%;
-    top:25%;
-}
-
-button{
-    padding:15px 40px;
-    margin:15px;
-    font-size:20px;
-    border:none;
-    border-radius:12px;
-    cursor:pointer;
-    background:gold;
-}
-
-.hidden{display:none;}
-
-canvas{display:none;}
-
-#tutorialOverlay{
-    position:absolute;
-    top:40%;
-    width:100%;
-    text-align:center;
-    font-size:40px;
-    font-weight:bold;
-    color:black;
-}
-.shopGrid{
-    display:flex;
-    justify-content:center;
-    gap:40px;
-}
-.skinBox{text-align:center;}
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -106,7 +61,7 @@ let player={
     legAngle:0,armAngle:0
 };
 
-let obstacles=[];
+let fireBalls=[];
 let coinObjects=[];
 let smoke=[];
 
@@ -183,23 +138,96 @@ function restartGame(){
 function reset(){
     score=0;
     speed=7;
-    obstacles=[];
+    fireBalls=[];
     coinObjects=[];
     smoke=[];
     player.y=groundY-player.height;
     player.velocityY=0;
 }
 
-function spawnObstacle(){
-    let types=["wall","platform","ball","slideBar"];
-    let t=types[Math.floor(Math.random()*types.length)];
-    obstacles.push({x:canvas.width,type:t});
+/* -------- FIREBALLS -------- */
+function spawnFireBall(){
+    fireBalls.push({
+        x:canvas.width,
+        y:groundY-60-Math.random()*200,
+        size:25,
+        speed:speed+3,
+        flame:[]
+    });
 }
 
+function updateFireBalls(){
+    fireBalls.forEach((b,i)=>{
+        b.x-=b.speed;
+
+        b.flame.push({
+            x:b.x+(Math.random()*20-10),
+            y:b.y+(Math.random()*20-10),
+            size:Math.random()*10+5,
+            alpha:1
+        });
+
+        if(b.x<-100) fireBalls.splice(i,1);
+    });
+}
+
+function drawFireBalls(){
+    fireBalls.forEach(b=>{
+        b.flame.forEach(f=>{
+            ctx.fillStyle=`rgba(255, ${100+Math.random()*100}, 0, ${f.alpha})`;
+            ctx.beginPath();
+            ctx.arc(f.x,f.y,f.size,0,Math.PI*2);
+            ctx.fill();
+            f.alpha-=0.03;
+        });
+
+        ctx.fillStyle="black";
+        ctx.beginPath();
+        ctx.arc(b.x,b.y,b.size,0,Math.PI*2);
+        ctx.fill();
+    });
+}
+
+function checkFireBallCollision(){
+    fireBalls.forEach(b=>{
+        let dx=(player.x+player.width/2)-b.x;
+        let dy=(player.y+player.height/2)-b.y;
+        let dist=Math.sqrt(dx*dx+dy*dy);
+
+        if(dist<b.size+30){
+            endGame();
+        }
+    });
+}
+
+/* -------- COINS -------- */
 function spawnCoin(){
     coinObjects.push({x:canvas.width,y:groundY-200-Math.random()*100});
 }
 
+function updateCoins(){
+    coinObjects.forEach(c=>c.x-=speed);
+    coinObjects.forEach((c,i)=>{
+        if(player.x<c.x+20 &&
+           player.x+player.width>c.x &&
+           player.y<c.y+20 &&
+           player.y+player.height>c.y){
+            coins++;
+            coinObjects.splice(i,1);
+        }
+    });
+}
+
+function drawCoins(){
+    coinObjects.forEach(c=>{
+        ctx.fillStyle="gold";
+        ctx.beginPath();
+        ctx.arc(c.x,c.y,12,0,Math.PI*2);
+        ctx.fill();
+    });
+}
+
+/* -------- UPDATE -------- */
 function update(){
     player.velocityY+=gravity;
     player.y+=player.velocityY;
@@ -216,69 +244,26 @@ function update(){
     player.legAngle+=0.2;
     player.armAngle+=0.25;
 
-    obstacles.forEach(o=>o.x-=speed);
-    coinObjects.forEach(c=>c.x-=speed);
-
-    obstacles.forEach(o=>{
-        if(o.type==="wall"){
-            if(player.x+player.width>o.x &&
-               player.x<o.x+60 &&
-               player.y+player.height>groundY-60){
-                endGame();
-            }
-        }
-        if(o.type==="ball"){
-            if(player.x+player.width>o.x &&
-               player.x<o.x+40 &&
-               player.y+player.height>groundY-40){
-                endGame();
-            }
-        }
-        if(o.type==="slideBar"){
-            if(!player.sliding &&
-               player.x+player.width>o.x &&
-               player.x<o.x+80 &&
-               player.y<groundY-80){
-                endGame();
-            }
-        }
-    });
-
-    coinObjects.forEach((c,i)=>{
-        if(player.x<c.x+20 &&
-           player.x+player.width>c.x &&
-           player.y<c.y+20 &&
-           player.y+player.height>c.y){
-            coins++;
-            coinObjects.splice(i,1);
-        }
-    });
+    updateFireBalls();
+    updateCoins();
+    checkFireBallCollision();
 
     if(gameMode==="game"){
-        if(Math.random()<0.02) spawnObstacle();
+        if(Math.random()<0.02) spawnFireBall();
         if(Math.random()<0.015) spawnCoin();
         score++;
         if(score%500===0) speed+=0.5;
     }
-
-    smoke.push({x:canvas.width,y:groundY-20,size:20,alpha:1});
-    smoke.forEach(s=>{
-        s.x-=speed/2;
-        s.alpha-=0.01;
-    });
-    smoke=smoke.filter(s=>s.alpha>0);
 }
 
+/* -------- DRAW -------- */
 function drawCity(){
-    // Effen achtergrondkleur
-    ctx.fillStyle = "#87CEEB"; // lichtblauw, kies zelf een kleur
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle="#b3e0ff";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
 
-    // Donkere grond
-    ctx.fillStyle = "#222";
-    ctx.fillRect(0, groundY, canvas.width, 140);
+    ctx.fillStyle="#222";
+    ctx.fillRect(0,groundY,canvas.width,140);
 }
-
 
 function drawPlayer(){
     ctx.save();
@@ -326,43 +311,11 @@ function drawPlayer(){
     ctx.restore();
 }
 
-function drawObstacles(){
-    obstacles.forEach(o=>{
-        if(o.type==="wall"){
-            ctx.fillStyle="#8B4513";
-            ctx.fillRect(o.x,groundY-60,60,60);
-        }
-        if(o.type==="platform"){
-            ctx.fillStyle="#555";
-            ctx.fillRect(o.x,groundY-120,100,20);
-        }
-        if(o.type==="ball"){
-            ctx.fillStyle="black";
-            ctx.beginPath();
-            ctx.arc(o.x,groundY-40,20,0,Math.PI*2);
-            ctx.fill();
-        }
-        if(o.type==="slideBar"){
-            ctx.fillStyle="yellow";
-            ctx.fillRect(o.x,groundY-80,80,10);
-        }
-    });
-}
-
-function drawCoins(){
-    coinObjects.forEach(c=>{
-        ctx.fillStyle="gold";
-        ctx.beginPath();
-        ctx.arc(c.x,c.y,12,0,Math.PI*2);
-        ctx.fill();
-    });
-}
-
 function draw(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
     drawCity();
     drawPlayer();
-    drawObstacles();
+    drawFireBalls();
     drawCoins();
     ctx.fillStyle="black";
     ctx.fillText("Score: "+score,20,40);
@@ -396,7 +349,6 @@ function drawPreview(id,color){
     x.arc(40,10,10,0,Math.PI*2);
     x.stroke();
 }
-
 </script>
 </body>
 </html>

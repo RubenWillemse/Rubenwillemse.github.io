@@ -40,3 +40,13 @@ button:hover{
 .hidden{
     display:none;
 }
+
+.shopGrid{
+    display:flex;
+    justify-content:center;
+    gap:40px;
+}
+
+.skinBox{
+    text-align:center;
+}
