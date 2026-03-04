@@ -144,8 +144,9 @@ function startTutorial(){
     canvas.style.display="block";
     gameMode="tutorial";
     reset();
-    document.getElementById("tutorialOverlay").classList.remove("hidden");
-    document.getElementById("tutorialOverlay").innerText="Druk SPATIE om te springen";
+    const t=document.getElementById("tutorialOverlay");
+    t.classList.remove("hidden");
+    t.innerText="Druk SPATIE om te springen";
     requestAnimationFrame(loop);
 }
 
@@ -364,7 +365,7 @@ function drawPlayerDefault(){
     if(player.sliding){
         ctx.beginPath();
         ctx.moveTo(-20,0);
-        ctx.lineLineTo(20,0);
+        ctx.lineTo(20,0);
         ctx.stroke();
     } else {
         ctx.beginPath();
@@ -619,4 +620,36 @@ function drawPreviewNeon(id){
    DRAW LOOP
 ============================================================ */
 function draw(){
-    ctx.clear
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    drawCity();
+    drawPlayer();
+    drawFireBalls();
+    drawCoins();
+
+    ctx.fillStyle="black";
+    ctx.font="24px Segoe UI";
+    ctx.fillText("Score: "+score,20,40);
+    ctx.fillText("Coins: "+coins,20,70);
+}
+
+/* ============================================================
+   GAME LOOP
+============================================================ */
+function loop(){
+    if(gameMode==="menu") return;
+    update();
+    draw();
+    requestAnimationFrame(loop);
+}
+
+/* ============================================================
+   GAME OVER
+============================================================ */
+function endGame(){
+    gameMode="menu";
+    document.getElementById("gameOverScreen").classList.remove("hidden");
+    document.getElementById("finalScore").innerText="Score: "+score;
+}
+</script>
+</body>
+</html>
