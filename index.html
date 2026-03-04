@@ -293,6 +293,7 @@ function updateCoins(){
            player.y<c.y+20 &&
            player.y+player.height>c.y){
             coins++;
+            saveGame();
             coinObjects.splice(i,1);
         }
     });
