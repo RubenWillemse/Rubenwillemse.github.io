@@ -7,7 +7,7 @@
 </head>
 <body>
 
-<!-- MENU -->
+<!-- MAIN MENU -->
 <div id="mainMenu" class="screen">
     <h1>URBAN PARKOUR</h1>
     <button onclick="startGame()">PLAY</button>
@@ -61,7 +61,10 @@
     <button onclick="backMenu()">MAIN MENU</button>
 </div>
 
+<!-- TUTORIAL -->
 <div id="tutorialOverlay" class="hidden"></div>
+
+<!-- GAME CANVAS -->
 <canvas id="gameCanvas"></canvas>
 
 <script>
@@ -296,7 +299,6 @@ function update(){
     player.velocityY+=gravity;
     player.y+=player.velocityY;
 
-    // grond + salto reset
     if(player.y>=groundY-player.height){
         player.y=groundY-player.height;
         player.jumping=false;
@@ -304,7 +306,6 @@ function update(){
         player.rotation=0;
     }
 
-    // salto tijdens double jump
     if(player.doubleJump){
         player.rotation+=20;
     }
@@ -363,7 +364,7 @@ function drawPlayerDefault(){
     if(player.sliding){
         ctx.beginPath();
         ctx.moveTo(-20,0);
-        ctx.lineTo(20,0);
+        ctx.lineLineTo(20,0);
         ctx.stroke();
     } else {
         ctx.beginPath();
@@ -618,12 +619,4 @@ function drawPreviewNeon(id){
    DRAW LOOP
 ============================================================ */
 function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    drawCity();
-    drawPlayer();
-    drawFireBalls();
-    drawCoins();
-}
-</script>
-</body>
-</html>
+    ctx.clear
