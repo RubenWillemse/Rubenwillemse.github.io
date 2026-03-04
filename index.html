@@ -179,6 +179,7 @@ function buySkin(skin, price){
     if(ownedSkins.has(skin)){
         currentSkin=skin;
         msg.innerText="Skin geselecteerd: "+skin.toUpperCase();
+        saveGame();
         return;
     }
 
@@ -188,18 +189,10 @@ function buySkin(skin, price){
         currentSkin=skin;
         document.getElementById("coinDisplay").innerText=coins;
         msg.innerText="Gekocht en geselecteerd: "+skin.toUpperCase();
+        saveGame();
     }else{
         msg.innerText="Te weinig coins!";
     }
-    if(ownedSkins.has(skin)){ currentSkin=skin; msg.innerText="Skin geselecteerd: "+skin.toUpperCase(); saveGame(); // <-- toevoegen return; }
-
-    if(coins>=price){
-    coins-=price;
-    ownedSkins.add(skin);
-    currentSkin=skin;
-    document.getElementById("coinDisplay").innerText=coins;
-    msg.innerText="Gekocht en geselecteerd: "+skin.toUpperCase();
-    saveGame(); // <-- toevoegen
 }
 
 }
