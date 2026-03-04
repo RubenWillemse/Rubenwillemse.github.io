@@ -19,28 +19,36 @@
 <div id="shopScreen" class="screen hidden">
     <h2>SHOP</h2>
     <p>Coins: <span id="coinDisplay">0</span></p>
+
     <div class="shopGrid">
+
         <div class="skinBox">
-            <canvas id="previewBlack" width="80" height="120"></canvas>
+            <canvas id="previewDefault" width="80" height="120"></canvas>
             <button onclick="buySkin('default',0)">Default (Free)</button>
         </div>
+
         <div class="skinBox">
             <canvas id="previewNinja" width="80" height="120"></canvas>
             <button onclick="buySkin('ninja',50)">Ninja Blue (50)</button>
         </div>
+
         <div class="skinBox">
             <canvas id="previewBlocky" width="80" height="120"></canvas>
             <button onclick="buySkin('blocky',75)">Blocky Green (75)</button>
         </div>
+
         <div class="skinBox">
             <canvas id="previewNeon" width="80" height="120"></canvas>
             <button onclick="buySkin('neon',100)">Neon Red (100)</button>
         </div>
+
         <div class="skinBox">
             <canvas id="previewGold" width="80" height="120"></canvas>
             <button onclick="buySkin('gold',200)">Gold (200)</button>
         </div>
+
     </div>
+
     <p id="shopMessage"></p>
     <button onclick="backMenu()">BACK</button>
 </div>
@@ -57,6 +65,9 @@
 <canvas id="gameCanvas"></canvas>
 
 <script>
+/* ============================================================
+   CANVAS + PLAYER SETUP
+============================================================ */
 const canvas=document.getElementById("gameCanvas");
 const ctx=canvas.getContext("2d");
 
@@ -67,13 +78,13 @@ let coins=0;
 let score=0;
 let groundY;
 
-let ownedSkins = new Set(["default"]); // standaard
+let ownedSkins = new Set(["default"]);
 let currentSkin = "default";
 
 let player={
     x:200,y:0,width:40,height:90,
     velocityY:0,jumping:false,doubleJump:false,
-    sliding:false,rotation:0,color:"black",
+    sliding:false,rotation:0,
     legAngle:0,armAngle:0
 };
 
@@ -89,7 +100,9 @@ function resize(){
 window.addEventListener("resize",resize);
 resize();
 
-/* -------- CONTROLS -------- */
+/* ============================================================
+   CONTROLS
+============================================================ */
 document.addEventListener("keydown",e=>{
     if(e.code==="Space"||e.code==="ArrowUp"){
         if(!player.jumping){
@@ -106,7 +119,9 @@ document.addEventListener("keyup",e=>{
     if(e.code==="ArrowDown") player.sliding=false;
 });
 
-/* -------- MENU -------- */
+/* ============================================================
+   MENU FUNCTIONS
+============================================================ */
 function hideAll(){
     document.querySelectorAll(".screen").forEach(s=>s.classList.add("hidden"));
     canvas.style.display="none";
@@ -150,28 +165,32 @@ function restartGame(){
     startGame();
 }
 
-/* -------- SHOP LOGIC -------- */
+/* ============================================================
+   SHOP LOGIC
+============================================================ */
 function buySkin(skin, price){
-    const msg = document.getElementById("shopMessage");
+    const msg=document.getElementById("shopMessage");
 
     if(ownedSkins.has(skin)){
-        currentSkin = skin;
-        msg.innerText = "Skin geselecteerd: " + skin.toUpperCase();
+        currentSkin=skin;
+        msg.innerText="Skin geselecteerd: "+skin.toUpperCase();
         return;
     }
 
-    if(coins >= price){
-        coins -= price;
+    if(coins>=price){
+        coins-=price;
         ownedSkins.add(skin);
-        currentSkin = skin;
+        currentSkin=skin;
         document.getElementById("coinDisplay").innerText=coins;
-        msg.innerText = "Gekocht en geselecteerd: " + skin.toUpperCase();
+        msg.innerText="Gekocht en geselecteerd: "+skin.toUpperCase();
     }else{
-        msg.innerText = "Te weinig coins voor " + skin.toUpperCase();
+        msg.innerText="Te weinig coins!";
     }
 }
 
-/* -------- GAME -------- */
+/* ============================================================
+   GAME RESET
+============================================================ */
 function reset(){
     score=0;
     speed=7;
@@ -180,9 +199,12 @@ function reset(){
     smoke=[];
     player.y=groundY-player.height;
     player.velocityY=0;
+    player.rotation=0;
 }
 
-/* -------- FIREBALLS -------- */
+/* ============================================================
+   FIREBALLS
+============================================================ */
 function spawnFireBall(){
     fireBalls.push({
         x:canvas.width,
@@ -227,8 +249,8 @@ function drawFireBalls(){
 
 function checkFireBallCollision(){
     fireBalls.forEach(b=>{
-        let dx=(player.x+player.width/2)-b.x;
-        let dy=(player.y+player.height/2)-b.y;
+        let dx=(player.x+20)-b.x;
+        let dy=(player.y+45)-b.y;
         let dist=Math.sqrt(dx*dx+dy*dy);
 
         if(dist<b.size+30){
@@ -237,13 +259,16 @@ function checkFireBallCollision(){
     });
 }
 
-/* -------- COINS -------- */
+/* ============================================================
+   COINS
+============================================================ */
 function spawnCoin(){
     coinObjects.push({x:canvas.width,y:groundY-200-Math.random()*100});
 }
 
 function updateCoins(){
     coinObjects.forEach(c=>c.x-=speed);
+
     coinObjects.forEach((c,i)=>{
         if(player.x<c.x+20 &&
            player.x+player.width>c.x &&
@@ -264,11 +289,14 @@ function drawCoins(){
     });
 }
 
-/* -------- UPDATE -------- */
+/* ============================================================
+   UPDATE LOOP
+============================================================ */
 function update(){
     player.velocityY+=gravity;
     player.y+=player.velocityY;
 
+    // grond + salto reset
     if(player.y>=groundY-player.height){
         player.y=groundY-player.height;
         player.jumping=false;
@@ -276,7 +304,10 @@ function update(){
         player.rotation=0;
     }
 
-    if(player.doubleJump) player.rotation+=20;
+    // salto tijdens double jump
+    if(player.doubleJump){
+        player.rotation+=20;
+    }
 
     player.legAngle+=0.2;
     player.armAngle+=0.25;
@@ -293,7 +324,9 @@ function update(){
     }
 }
 
-/* -------- DRAW BACKGROUND -------- */
+/* ============================================================
+   BACKGROUND
+============================================================ */
 function drawCity(){
     ctx.fillStyle="#b3e0ff";
     ctx.fillRect(0,0,canvas.width,canvas.height);
@@ -302,190 +335,13 @@ function drawCity(){
     ctx.fillRect(0,groundY,canvas.width,140);
 }
 
-/* -------- PLAYER SKINS -------- */
-function drawPlayerDefault(){
-    ctx.strokeStyle="black";
-    ctx.lineWidth=6;
-
-    if(player.sliding){
-        ctx.beginPath();
-        ctx.moveTo(player.x,player.y+45);
-        ctx.lineTo(player.x+40,player.y+45);
-        ctx.stroke();
-    }else{
-        ctx.beginPath();
-        ctx.moveTo(player.x+20,player.y+15);
-        ctx.lineTo(player.x+20,player.y+75);
-        ctx.stroke();
-    }
-
-    ctx.beginPath();
-    ctx.arc(player.x+20,player.y,15,0,Math.PI*2);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(player.x+20,player.y+30);
-    ctx.lineTo(player.x+20+Math.sin(player.armAngle)*25,player.y+50);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(player.x+20,player.y+30);
-    ctx.lineTo(player.x+20-Math.sin(player.armAngle)*25,player.y+50);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(player.x+20,player.y+75);
-    ctx.lineTo(player.x+20+Math.sin(player.legAngle)*25,player.y+115);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(player.x+20,player.y+75);
-    ctx.lineTo(player.x+20-Math.sin(player.legAngle)*25,player.y+115);
-    ctx.stroke();
-}
-
-function drawPlayerGold(){
-    ctx.strokeStyle="#ffd700";
-    ctx.lineWidth=7;
-
-    ctx.beginPath();
-    ctx.arc(player.x+20,player.y,17,0,Math.PI*2);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(player.x+20,player.y+20);
-    ctx.lineTo(player.x+20,player.y+80);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(player.x+20,player.y+30);
-    ctx.lineTo(player.x+20+Math.sin(player.armAngle)*30,player.y+55);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(player.x+20,player.y+30);
-    ctx.lineTo(player.x+20-Math.sin(player.armAngle)*30,player.y+55);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(player.x+20,player.y+80);
-    ctx.lineTo(player.x+20+Math.sin(player.legAngle)*30,player.y+120);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(player.x+20,player.y+80);
-    ctx.lineTo(player.x+20-Math.sin(player.legAngle)*30,player.y+120);
-    ctx.stroke();
-}
-
-function drawPlayerNinja(){
-    ctx.strokeStyle="#004e98";
-    ctx.lineWidth=8;
-
-    ctx.beginPath();
-    ctx.arc(player.x+20,player.y,16,0,Math.PI*2);
-    ctx.stroke();
-
-    ctx.strokeStyle="#ff0000";
-    ctx.beginPath();
-    ctx.moveTo(player.x+5,player.y-5);
-    ctx.lineTo(player.x+35,player.y-5);
-    ctx.stroke();
-
-    ctx.strokeStyle="#004e98";
-    ctx.beginPath();
-    ctx.moveTo(player.x+20,player.y+15);
-    ctx.lineTo(player.x+20,player.y+80);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(player.x+20,player.y+30);
-    ctx.lineTo(player.x+20+Math.sin(player.armAngle)*28,player.y+55);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(player.x+20,player.y+30);
-    ctx.lineTo(player.x+20-Math.sin(player.armAngle)*28,player.y+55);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(player.x+20,player.y+80);
-    ctx.lineTo(player.x+20+Math.sin(player.legAngle)*28,player.y+120);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(player.x+20,player.y+80);
-    ctx.lineTo(player.x+20-Math.sin(player.legAngle)*28,player.y+120);
-    ctx.stroke();
-}
-
-function drawPlayerBlocky(){
-    ctx.fillStyle="#2ecc71";
-    ctx.strokeStyle="#145a32";
-    ctx.lineWidth=4;
-
-    ctx.fillRect(player.x+5,player.y-20,30,30);
-    ctx.strokeRect(player.x+5,player.y-20,30,30);
-
-    ctx.fillRect(player.x+10,player.y+10,20,50);
-    ctx.strokeRect(player.x+10,player.y+10,20,50);
-
-    ctx.fillRect(player.x-5,player.y+15,15,35);
-    ctx.strokeRect(player.x-5,player.y+15,15,35);
-
-    ctx.fillRect(player.x+30,player.y+15,15,35);
-    ctx.strokeRect(player.x+30,player.y+15,15,35);
-
-    ctx.fillRect(player.x+8,player.y+60,12,35);
-    ctx.strokeRect(player.x+8,player.y+60,12,35);
-
-    ctx.fillRect(player.x+20,player.y+60,12,35);
-    ctx.strokeRect(player.x+20,player.y+60,12,35);
-}
-
-function drawPlayerNeon(){
-    ctx.save();
-    ctx.shadowColor="red";
-    ctx.shadowBlur=15;
-    ctx.strokeStyle="#ff1744";
-    ctx.lineWidth=5;
-
-    ctx.beginPath();
-    ctx.arc(player.x+20,player.y,15,0,Math.PI*2);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(player.x+20,player.y+15);
-    ctx.lineTo(player.x+20,player.y+75);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(player.x+20,player.y+30);
-    ctx.lineTo(player.x+20+Math.sin(player.armAngle)*30,player.y+55);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(player.x+20,player.y+30);
-    ctx.lineTo(player.x+20-Math.sin(player.armAngle)*30,player.y+55);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(player.x+20,player.y+75);
-    ctx.lineTo(player.x+20+Math.sin(player.legAngle)*30,player.y+115);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(player.x+20,player.y+75);
-    ctx.lineTo(player.x+20-Math.sin(player.legAngle)*30,player.y+115);
-    ctx.stroke();
-
-    ctx.restore();
-}
-
+/* ============================================================
+   PLAYER DRAWING (ROTATION CENTERED)
+============================================================ */
 function drawPlayer(){
     ctx.save();
-    ctx.translate(0,0);
-    ctx.rotate(0);
+    ctx.translate(player.x+20, player.y+45);
+    ctx.rotate(player.rotation * Math.PI/180);
 
     if(currentSkin==="default") drawPlayerDefault();
     else if(currentSkin==="gold") drawPlayerGold();
@@ -497,9 +353,193 @@ function drawPlayer(){
     ctx.restore();
 }
 
-/* -------- SHOP PREVIEWS -------- */
+/* ============================================================
+   SKIN FUNCTIONS
+============================================================ */
+function drawPlayerDefault(){
+    ctx.strokeStyle="black";
+    ctx.lineWidth=6;
+
+    if(player.sliding){
+        ctx.beginPath();
+        ctx.moveTo(-20,0);
+        ctx.lineTo(20,0);
+        ctx.stroke();
+    } else {
+        ctx.beginPath();
+        ctx.moveTo(0,-30);
+        ctx.lineTo(0,30);
+        ctx.stroke();
+    }
+
+    ctx.beginPath();
+    ctx.arc(0,-45,15,0,Math.PI*2);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0,-10);
+    ctx.lineTo(Math.sin(player.armAngle)*25,10);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0,-10);
+    ctx.lineTo(-Math.sin(player.armAngle)*25,10);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0,30);
+    ctx.lineTo(Math.sin(player.legAngle)*25,70);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0,30);
+    ctx.lineTo(-Math.sin(player.legAngle)*25,70);
+    ctx.stroke();
+}
+
+function drawPlayerGold(){
+    ctx.strokeStyle="#ffd700";
+    ctx.lineWidth=7;
+
+    ctx.beginPath();
+    ctx.arc(0,-45,17,0,Math.PI*2);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0,-25);
+    ctx.lineTo(0,35);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0,-15);
+    ctx.lineTo(Math.sin(player.armAngle)*30,10);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0,-15);
+    ctx.lineTo(-Math.sin(player.armAngle)*30,10);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0,35);
+    ctx.lineTo(Math.sin(player.legAngle)*30,75);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0,35);
+    ctx.lineTo(-Math.sin(player.legAngle)*30,75);
+    ctx.stroke();
+}
+
+function drawPlayerNinja(){
+    ctx.strokeStyle="#004e98";
+    ctx.lineWidth=8;
+
+    ctx.beginPath();
+    ctx.arc(0,-45,16,0,Math.PI*2);
+    ctx.stroke();
+
+    ctx.strokeStyle="#ff0000";
+    ctx.beginPath();
+    ctx.moveTo(-15,-50);
+    ctx.lineTo(15,-50);
+    ctx.stroke();
+
+    ctx.strokeStyle="#004e98";
+    ctx.beginPath();
+    ctx.moveTo(0,-30);
+    ctx.lineTo(0,35);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0,-15);
+    ctx.lineTo(Math.sin(player.armAngle)*28,10);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0,-15);
+    ctx.lineTo(-Math.sin(player.armAngle)*28,10);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0,35);
+    ctx.lineTo(Math.sin(player.legAngle)*28,75);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0,35);
+    ctx.lineTo(-Math.sin(player.legAngle)*28,75);
+    ctx.stroke();
+}
+
+function drawPlayerBlocky(){
+    ctx.fillStyle="#2ecc71";
+    ctx.strokeStyle="#145a32";
+    ctx.lineWidth=4;
+
+    ctx.fillRect(-15,-55,30,30);
+    ctx.strokeRect(-15,-55,30,30);
+
+    ctx.fillRect(-10,-25,20,50);
+    ctx.strokeRect(-10,-25,20,50);
+
+    ctx.fillRect(-25,-20,15,35);
+    ctx.strokeRect(-25,-20,15,35);
+
+    ctx.fillRect(10,-20,15,35);
+    ctx.strokeRect(10,-20,15,35);
+
+    ctx.fillRect(-12,25,12,35);
+    ctx.strokeRect(-12,25,12,35);
+
+    ctx.fillRect(0,25,12,35);
+    ctx.strokeRect(0,25,12,35);
+}
+
+function drawPlayerNeon(){
+    ctx.save();
+    ctx.shadowColor="red";
+    ctx.shadowBlur=15;
+    ctx.strokeStyle="#ff1744";
+    ctx.lineWidth=5;
+
+    ctx.beginPath();
+    ctx.arc(0,-45,15,0,Math.PI*2);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0,-30);
+    ctx.lineTo(0,30);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0,-15);
+    ctx.lineTo(Math.sin(player.armAngle)*30,10);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0,-15);
+    ctx.lineTo(-Math.sin(player.armAngle)*30,10);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0,30);
+    ctx.lineTo(Math.sin(player.legAngle)*30,70);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0,30);
+    ctx.lineTo(-Math.sin(player.legAngle)*30,70);
+    ctx.stroke();
+
+    ctx.restore();
+}
+
+/* ============================================================
+   SHOP PREVIEWS
+============================================================ */
 function drawShopPreviews(){
-    drawPreviewDefault("previewBlack");
+    drawPreviewDefault("previewDefault");
     drawPreviewNinja("previewNinja");
     drawPreviewBlocky("previewBlocky");
     drawPreviewNeon("previewNeon");
@@ -550,11 +590,6 @@ function drawPreviewNinja(id){
     x.moveTo(30,15);
     x.lineTo(50,15);
     x.stroke();
-    x.strokeStyle="#004e98";
-    x.beginPath();
-    x.moveTo(40,30);
-    x.lineTo(40,80);
-    x.stroke();
 }
 
 function drawPreviewBlocky(id){
@@ -566,8 +601,6 @@ function drawPreviewBlocky(id){
     x.lineWidth=3;
     x.fillRect(30,15,20,20);
     x.strokeRect(30,15,20,20);
-    x.fillRect(33,35,14,30);
-    x.strokeRect(33,35,14,30);
 }
 
 function drawPreviewNeon(id){
@@ -579,36 +612,15 @@ function drawPreviewNeon(id){
     x.beginPath();
     x.arc(40,20,10,0,Math.PI*2);
     x.stroke();
-    x.beginPath();
-    x.moveTo(40,30);
-    x.lineTo(40,70);
-    x.stroke();
 }
 
-/* -------- MAIN DRAW -------- */
+/* ============================================================
+   DRAW LOOP
+============================================================ */
 function draw(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
     drawCity();
     drawPlayer();
     drawFireBalls();
     drawCoins();
-    ctx.fillStyle="black";
-    ctx.fillText("Score: "+score,20,40);
-    ctx.fillText("Coins: "+coins,20,70);
-}
 
-function loop(){
-    if(gameMode==="menu") return;
-    update();
-    draw();
-    requestAnimationFrame(loop);
-}
-
-function endGame(){
-    gameMode="menu";
-    document.getElementById("gameOverScreen").classList.remove("hidden");
-    document.getElementById("finalScore").innerText="Score: "+score;
-}
-</script>
-</body>
-</html>
