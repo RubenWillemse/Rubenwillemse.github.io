@@ -270,18 +270,15 @@ function update(){
 }
 
 function drawCity(){
-    // Mooie schone blauw-witte gradient achtergrond
-    let grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    grad.addColorStop(0, "#4facfe");   // licht blauw boven
-    grad.addColorStop(1, "#ffffff");   // wit onder
-    
-    ctx.fillStyle = grad;
+    // Effen achtergrondkleur
+    ctx.fillStyle = "#87CEEB"; // lichtblauw, kies zelf een kleur
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Strakke donkere grond
+    // Donkere grond
     ctx.fillStyle = "#222";
     ctx.fillRect(0, groundY, canvas.width, 140);
 }
+
 
 function drawPlayer(){
     ctx.save();
