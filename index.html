@@ -17,10 +17,11 @@
 
 <!-- TUTORIAL -->
 <div id="tutorial" class="screen hidden">
-    <h2>TUTORIAL</h2>
-    <p>SPACE = Jump (double jump for Salto)</p>
+    <h2>HOW TO PLAY</h2>
+    <p>SPACE = Jump</p>
     <p>ARROW DOWN = Slide</p>
-    <p>Avoid balls and gaps, collect coins.</p>
+    <p>Avoid balls and gaps.</p>
+    <p>Collect coins to unlock skins.</p>
     <button onclick="backMenu()">BACK</button>
 </div>
 
@@ -28,16 +29,7 @@
 <div id="shop" class="screen hidden">
     <h2>SHOP</h2>
     <p>Coins: <span id="coinDisplay">0</span></p>
-    <div class="shopGrid">
-        <div class="skinBox">
-            <canvas id="previewBlack" width="80" height="120"></canvas>
-            <button onclick="selectSkin('black')">Default</button>
-        </div>
-        <div class="skinBox">
-            <canvas id="previewGold" width="80" height="120"></canvas>
-            <button onclick="buyGold()">Gold (20)</button>
-        </div>
-    </div>
+    <button onclick="buyGold()">Unlock Gold Skin (20 coins)</button>
     <button onclick="backMenu()">BACK</button>
 </div>
 
@@ -57,26 +49,31 @@ const ctx = canvas.getContext("2d");
 let gravity = 0.8;
 let speed = 6;
 let groundY;
+
 let coins = 0;
 let goldUnlocked = false;
-let usingSkin = "black";
+let usingGold = false;
+
 let animationFrame = 0;
-let gameRunning = false;
 
 let player = {
-    x:150, y:0, width:40, height:90,
+    x:150,
+    y:0,
+    width:40,
+    height:90,
     velocityY:0,
     jumping:false,
-    doubleJump:false,
-    sliding:false,
-    rotation:0
+    sliding:false
 };
 
-let platforms=[], balls=[], gaps=[], coinObjects=[];
-let levelLength = 4000;
-let progress = 0;
+let platforms=[];
+let balls=[];
+let gaps=[];
+let coinObjects=[];
+let gameRunning=false;
 
 /* ---------- RESIZE ---------- */
+
 function resize(){
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -85,7 +82,8 @@ function resize(){
 window.addEventListener("resize", resize);
 resize();
 
-/* ---------- MENU ---------- */
+/* ---------- MENU NAV ---------- */
+
 function startGame(){
     hideAll();
     canvas.style.display="block";
@@ -93,162 +91,243 @@ function startGame(){
     gameRunning=true;
     requestAnimationFrame(loop);
 }
-function openTutorial(){ hideAll(); document.getElementById("tutorial").classList.remove("hidden"); }
-function openShop(){ hideAll(); document.getElementById("shop").classList.remove("hidden"); drawSkinPreviews(); }
-function backMenu(){ hideAll(); document.getElementById("menu").classList.remove("hidden"); }
-function hideAll(){ document.querySelectorAll(".screen").forEach(s=>s.classList.add("hidden")); canvas.style.display="none"; }
+
+function openTutorial(){
+    hideAll();
+    document.getElementById("tutorial").classList.remove("hidden");
+}
+
+function openShop(){
+    hideAll();
+    document.getElementById("shop").classList.remove("hidden");
+    document.getElementById("coinDisplay").innerText = coins;
+}
+
+function backMenu(){
+    hideAll();
+    document.getElementById("menu").classList.remove("hidden");
+}
+
+function hideAll(){
+    document.querySelectorAll(".screen").forEach(s=>s.classList.add("hidden"));
+    canvas.style.display="none";
+}
 
 /* ---------- SHOP ---------- */
+
 function buyGold(){
-    if(coins>=20){ coins-=20; goldUnlocked=true; usingSkin="gold"; alert("Gold skin unlocked!"); document.getElementById("coinDisplay").innerText=coins; }
-    else alert("Not enough coins!");
+    if(coins >= 20){
+        coins -= 20;
+        goldUnlocked = true;
+        usingGold = true;
+        alert("Gold Skin Unlocked!");
+    } else {
+        alert("Not enough coins!");
+    }
 }
-function selectSkin(name){ if(name==="black"){usingSkin="black"} else if(name==="gold" && goldUnlocked){usingSkin="gold"} }
 
 /* ---------- LEVEL ---------- */
+
 function resetLevel(){
     player.y = groundY - player.height;
     player.velocityY = 0;
-    player.jumping=false;
-    player.doubleJump=false;
-    player.sliding=false;
-    player.rotation=0;
-    platforms=[]; balls=[]; gaps=[]; coinObjects=[]; progress=0;
 
-    for(let i=600;i<levelLength;i+=800){ platforms.push({x:i,width:200,height:20}); }
-    for(let i=1200;i<levelLength;i+=1500){ balls.push({x:i,radius:25}); }
-    for(let i=2000;i<levelLength;i+=2000){ gaps.push({x:i,width:150}); }
-    for(let i=500;i<levelLength;i+=600){ coinObjects.push({x:i,y:groundY-200,collected:false}); }
+    platforms=[];
+    balls=[];
+    gaps=[];
+    coinObjects=[];
+
+    for(let i=600;i<4000;i+=800){
+        platforms.push({x:i,width:200,height:20});
+    }
+
+    for(let i=1200;i<4000;i+=1500){
+        balls.push({x:i,radius:25});
+    }
+
+    for(let i=2000;i<4000;i+=2000){
+        gaps.push({x:i,width:150});
+    }
+
+    for(let i=500;i<4000;i+=600){
+        coinObjects.push({x:i,y:groundY-200,collected:false});
+    }
 }
 
 /* ---------- CONTROLS ---------- */
-document.addEventListener("keydown", e=>{
-    if(e.code==="Space"){
-        if(!player.jumping){ player.velocityY=-18; player.jumping=true; }
-        else if(!player.doubleJump){ player.velocityY=-20; player.doubleJump=true; player.rotation=-360; }
+
+document.addEventListener("keydown",e=>{
+    if(e.code==="Space" && !player.jumping){
+        player.velocityY=-18;
+        player.jumping=true;
     }
-    if(e.code==="ArrowDown"){ player.sliding=true; }
+    if(e.code==="ArrowDown"){
+        player.sliding=true;
+    }
 });
-document.addEventListener("keyup", e=>{
-    if(e.code==="ArrowDown"){ player.sliding=false; }
+
+document.addEventListener("keyup",e=>{
+    if(e.code==="ArrowDown"){
+        player.sliding=false;
+    }
 });
 
 /* ---------- UPDATE ---------- */
+
 function update(){
+
     animationFrame += 0.15;
+
     player.velocityY += gravity;
     player.y += player.velocityY;
 
-    // Ground collision
     if(player.y >= groundY - player.height){
         player.y = groundY - player.height;
-        player.velocityY=0; player.jumping=false; player.doubleJump=false; player.rotation=0;
+        player.velocityY=0;
+        player.jumping=false;
     }
 
-    // Platforms
-    platforms.forEach(p=>{ p.x -= speed; if(player.x < p.x + p.width && player.x+player.width > p.x && player.y+player.height >= groundY-100-10 && player.y+player.height <= groundY-100){ player.y=groundY-100-player.height; player.velocityY=0; player.jumping=false; player.doubleJump=false; } });
+    platforms.forEach(p=>{
+        p.x -= speed;
+    });
 
-    // Balls
     balls.forEach(b=>{
         b.x -= speed;
         let dx = player.x - b.x;
         let dy = (player.y+player.height) - (groundY - b.radius);
-        if(Math.sqrt(dx*dx + dy*dy) < b.radius){ gameOver(); }
+        if(Math.sqrt(dx*dx + dy*dy) < b.radius){
+            gameOver();
+        }
     });
 
-    // Gaps
     gaps.forEach(g=>{
         g.x -= speed;
-        if(player.x>g.x && player.x<g.x+g.width && player.y>=groundY-player.height){ gameOver(); }
+        if(player.x > g.x && player.x < g.x + g.width &&
+           player.y >= groundY - player.height){
+            gameOver();
+        }
     });
 
-    // Coins
     coinObjects.forEach(c=>{
         c.x -= speed;
-        if(!c.collected && player.x < c.x+20 && player.x+player.width>c.x && player.y<c.y+20 && player.y+player.height>c.y){ c.collected=true; coins++; }
+        if(!c.collected &&
+           player.x < c.x+20 &&
+           player.x+player.width > c.x &&
+           player.y < c.y+20 &&
+           player.y+player.height > c.y){
+            c.collected=true;
+            coins++;
+        }
     });
-
-    progress+=speed;
-    if(progress>=levelLength){ levelComplete(); }
 }
 
 /* ---------- DRAW ---------- */
+
 function draw(){
-    // Background
-    ctx.fillStyle="#a0c4ff"; ctx.fillRect(0,0,canvas.width,canvas.height);
 
-    // Ground
-    ctx.fillStyle="#fff"; ctx.fillRect(0,groundY,canvas.width,150);
+    ctx.clearRect(0,0,canvas.width,canvas.height);
 
-    // Platforms
-    ctx.fillStyle="#555"; platforms.forEach(p=>{ ctx.fillRect(p.x, groundY-100, p.width, p.height); });
+    ctx.fillStyle="#222";
+    ctx.fillRect(0,groundY,canvas.width,150);
 
-    // Gaps
-    ctx.fillStyle="#a0c4ff"; gaps.forEach(g=>{ ctx.fillRect(g.x, groundY, g.width,150); });
+    platforms.forEach(p=>{
+        ctx.fillStyle="#555";
+        ctx.fillRect(p.x,groundY-100,p.width,p.height);
+    });
 
-    // Balls
-    ctx.fillStyle="black"; balls.forEach(b=>{ ctx.beginPath(); ctx.arc(b.x,groundY-b.radius,b.radius,0,Math.PI*2); ctx.fill(); });
+    gaps.forEach(g=>{
+        ctx.fillStyle="#111";
+        ctx.fillRect(g.x,groundY,g.width,150);
+    });
 
-    // Coins
-    coinObjects.forEach(c=>{ if(!c.collected){ ctx.fillStyle="gold"; ctx.beginPath(); ctx.arc(c.x,c.y,10,0,Math.PI*2); ctx.fill(); } });
+    balls.forEach(b=>{
+        ctx.fillStyle="black";
+        ctx.beginPath();
+        ctx.arc(b.x,groundY-b.radius,b.radius,0,Math.PI*2);
+        ctx.fill();
+    });
+
+    coinObjects.forEach(c=>{
+        if(!c.collected){
+            ctx.fillStyle="gold";
+            ctx.beginPath();
+            ctx.arc(c.x, c.y, 10, 0, Math.PI*2);
+            ctx.fill();
+        }
+    });
 
     drawPlayer();
 }
 
 function drawPlayer(){
+
     ctx.save();
     ctx.translate(player.x+20, player.y+45);
-    ctx.rotate(player.rotation*Math.PI/180);
 
-    ctx.strokeStyle = usingSkin==="gold" ? "gold" : "black";
+    let skinColor = usingGold ? "gold" : "white";
+
+    ctx.strokeStyle=skinColor;
     ctx.lineWidth=5;
 
     if(player.sliding){
         ctx.beginPath();
-        ctx.moveTo(-30,0); ctx.lineTo(30,0); ctx.stroke();
+        ctx.moveTo(-30,0);
+        ctx.lineTo(30,0);
+        ctx.stroke();
     } else {
-        // Body
         ctx.beginPath();
-        ctx.moveTo(0,-30); ctx.lineTo(0,30); ctx.stroke();
+        ctx.moveTo(0,-30);
+        ctx.lineTo(0,30);
+        ctx.stroke();
 
-        // Legs
-        let legMove=Math.sin(animationFrame)*20;
-        ctx.beginPath();
-        ctx.moveTo(0,30); ctx.lineTo(-20,30+legMove); ctx.moveTo(0,30); ctx.lineTo(20,30-legMove); ctx.stroke();
+        let legMove = Math.sin(animationFrame)*20;
+        let armMove = Math.cos(animationFrame)*20;
 
-        // Arms
-        let armMove=Math.cos(animationFrame)*20;
         ctx.beginPath();
-        ctx.moveTo(0,-10); ctx.lineTo(-20,-10+armMove); ctx.moveTo(0,-10); ctx.lineTo(20,-10-armMove); ctx.stroke();
+        ctx.moveTo(0,0);
+        ctx.lineTo(-20,legMove);
+        ctx.moveTo(0,0);
+        ctx.lineTo(20,-legMove);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(0,-10);
+        ctx.lineTo(-20,-10+armMove);
+        ctx.moveTo(0,-10);
+        ctx.lineTo(20,-10-armMove);
+        ctx.stroke();
     }
 
-    // Head
     ctx.beginPath();
-    ctx.arc(0,-45,15,0,Math.PI*2); ctx.stroke();
+    ctx.arc(0,-45,15,0,Math.PI*2);
+    ctx.stroke();
 
     ctx.restore();
 }
 
 /* ---------- LOOP ---------- */
-function loop(){ if(!gameRunning) return; update(); draw(); requestAnimationFrame(loop); }
+
+function loop(){
+    if(!gameRunning) return;
+    update();
+    draw();
+    requestAnimationFrame(loop);
+}
 
 /* ---------- STATES ---------- */
-function gameOver(){ gameRunning=false; document.getElementById("gameOver").classList.remove("hidden"); }
-function restart(){ document.getElementById("gameOver").classList.add("hidden"); resetLevel(); gameRunning=true; requestAnimationFrame(loop); }
-function levelComplete(){ gameRunning=false; alert("Level Complete!"); backMenu(); }
 
-/* ---------- SKIN PREVIEW ---------- */
-function drawSkinPreviews(){
-    ["previewBlack","previewGold"].forEach(id=>{
-        let c=document.getElementById(id);
-        let x=c.getContext("2d");
-        x.clearRect(0,0,c.width,c.height);
-        x.strokeStyle = (id==="previewGold") ? "gold" : "black";
-        x.lineWidth=5;
-        x.beginPath(); x.moveTo(40,20); x.lineTo(40,80); x.stroke();
-        x.beginPath(); x.arc(40,10,10,0,Math.PI*2); x.stroke();
-    });
+function gameOver(){
+    gameRunning=false;
+    document.getElementById("gameOver").classList.remove("hidden");
 }
+
+function restart(){
+    document.getElementById("gameOver").classList.add("hidden");
+    resetLevel();
+    gameRunning=true;
+    requestAnimationFrame(loop);
+}
+
 </script>
 </body>
 </html>
