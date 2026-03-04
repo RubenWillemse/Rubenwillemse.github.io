@@ -2,308 +2,416 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
-<title>Urban Parkour Pro</title>
-<link rel="stylesheet" href="style.css">
+<title>Urban Parkour Runner</title>
+<style>
+body{
+    margin:0;
+    overflow:hidden;
+    font-family:Arial, sans-serif;
+    background:#111;
+    color:white;
+    text-align:center;
+}
+
+.screen{
+    position:absolute;
+    width:100%;
+    top:25%;
+}
+
+button{
+    padding:15px 40px;
+    margin:15px;
+    font-size:20px;
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+    background:gold;
+}
+
+.hidden{display:none;}
+
+canvas{display:none;}
+
+#tutorialOverlay{
+    position:absolute;
+    top:40%;
+    width:100%;
+    text-align:center;
+    font-size:40px;
+    font-weight:bold;
+    color:black;
+}
+.shopGrid{
+    display:flex;
+    justify-content:center;
+    gap:40px;
+}
+.skinBox{text-align:center;}
+</style>
 </head>
 <body>
 
-<div id="menu" class="screen">
+<!-- MENU -->
+<div id="mainMenu" class="screen">
     <h1>URBAN PARKOUR</h1>
     <button onclick="startGame()">PLAY</button>
     <button onclick="startTutorial()">TUTORIAL</button>
     <button onclick="openShop()">SHOP</button>
 </div>
 
-<div id="shop" class="screen hidden">
+<!-- SHOP -->
+<div id="shopScreen" class="screen hidden">
     <h2>SHOP</h2>
     <p>Coins: <span id="coinDisplay">0</span></p>
-    <button onclick="selectSkin('black')">Black (Free)</button>
-    <button onclick="buyGold()">Gold (20)</button>
+    <div class="shopGrid">
+        <div class="skinBox">
+            <canvas id="previewBlack" width="80" height="120"></canvas>
+            <button onclick="buySkin('black',0)">Default</button>
+        </div>
+        <div class="skinBox">
+            <canvas id="previewGold" width="80" height="120"></canvas>
+            <button onclick="buySkin('gold',200)">Gold (200)</button>
+        </div>
+    </div>
     <button onclick="backMenu()">BACK</button>
 </div>
 
-<div id="gameOver" class="screen hidden">
-    <h2>YOU FELL</h2>
-    <button onclick="restart()">RESTART</button>
-    <button onclick="backMenu()">MENU</button>
+<!-- GAME OVER -->
+<div id="gameOverScreen" class="screen hidden">
+    <h2>GAME OVER</h2>
+    <p id="finalScore"></p>
+    <button onclick="restartGame()">RESTART</button>
+    <button onclick="backMenu()">MAIN MENU</button>
 </div>
 
-<canvas id="game"></canvas>
+<div id="tutorialOverlay" class="hidden"></div>
+<canvas id="gameCanvas"></canvas>
 
 <script>
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
+const canvas=document.getElementById("gameCanvas");
+const ctx=canvas.getContext("2d");
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+let gameMode="menu";
+let gravity=0.9;
+let speed=7;
+let coins=0;
+let score=0;
+let groundY;
 
-let groundY = canvas.height - 140;
-let gameState = "menu";
-let speed = 6;
-let levelLength = 5000;
-let progress = 0;
-
-let coins = 0;
-let goldUnlocked = false;
-let currentSkin = "black";
-
-let player = {
-    x:150,
-    y:0,
-    width:40,
-    height:90,
-    velY:0,
-    gravity:0.8,
-    jumping:false,
-    doubleJump:false,
-    sliding:false,
-    rotation:0,
-    anim:0
+let player={
+    x:200,y:0,width:40,height:90,
+    velocityY:0,jumping:false,doubleJump:false,
+    sliding:false,rotation:0,color:"black",
+    legAngle:0,armAngle:0
 };
 
-let balls = [];
-let gaps = [];
-let coinObjects = [];
+let obstacles=[];
+let coinObjects=[];
+let smoke=[];
 
-function resetLevel(isTutorial=false){
-    balls=[];
-    gaps=[];
-    coinObjects=[];
-    progress=0;
+function resize(){
+    canvas.width=window.innerWidth;
+    canvas.height=window.innerHeight;
+    groundY=canvas.height-140;
+}
+window.addEventListener("resize",resize);
+resize();
 
-    player.y = groundY - player.height;
-    player.velY = 0;
-    player.jumping=false;
-    player.doubleJump=false;
-    player.rotation=0;
-
-    if(isTutorial){
-        balls.push({x:600,r:25});
-        gaps.push({x:1000,w:150});
-    } else {
-        for(let i=800;i<levelLength;i+=1200){
-            balls.push({x:i,r:25});
-        }
-        for(let i=1500;i<levelLength;i+=2000){
-            gaps.push({x:i,w:150});
-        }
-        for(let i=500;i<levelLength;i+=700){
-            coinObjects.push({x:i,y:groundY-200,collected:false});
+/* -------- CONTROLS -------- */
+document.addEventListener("keydown",e=>{
+    if(e.code==="Space"||e.code==="ArrowUp"){
+        if(!player.jumping){
+            player.velocityY=-20;
+            player.jumping=true;
+        }else if(!player.doubleJump){
+            player.velocityY=-22;
+            player.doubleJump=true;
         }
     }
+    if(e.code==="ArrowDown") player.sliding=true;
+});
+document.addEventListener("keyup",e=>{
+    if(e.code==="ArrowDown") player.sliding=false;
+});
+
+/* -------- MENU -------- */
+function hideAll(){
+    document.querySelectorAll(".screen").forEach(s=>s.classList.add("hidden"));
+    canvas.style.display="none";
+    document.getElementById("tutorialOverlay").classList.add("hidden");
 }
 
 function startGame(){
-    hideScreens();
+    hideAll();
     canvas.style.display="block";
-    gameState="playing";
-    resetLevel(false);
+    gameMode="game";
+    reset();
+    requestAnimationFrame(loop);
 }
 
 function startTutorial(){
-    hideScreens();
+    hideAll();
     canvas.style.display="block";
-    gameState="tutorial";
-    resetLevel(true);
+    gameMode="tutorial";
+    reset();
+    document.getElementById("tutorialOverlay").classList.remove("hidden");
+    document.getElementById("tutorialOverlay").innerText="Druk SPATIE om te springen";
+    requestAnimationFrame(loop);
 }
 
 function openShop(){
-    hideScreens();
-    document.getElementById("shop").classList.remove("hidden");
+    hideAll();
+    document.getElementById("shopScreen").classList.remove("hidden");
     document.getElementById("coinDisplay").innerText=coins;
+    drawPreview("previewBlack","black");
+    drawPreview("previewGold","gold");
 }
 
 function backMenu(){
-    hideScreens();
-    document.getElementById("menu").classList.remove("hidden");
-    gameState="menu";
+    hideAll();
+    gameMode="menu";
+    document.getElementById("mainMenu").classList.remove("hidden");
 }
 
-function restart(){
-    document.getElementById("gameOver").classList.add("hidden");
+function restartGame(){
+    document.getElementById("gameOverScreen").classList.add("hidden");
     startGame();
 }
 
-function hideScreens(){
-    document.querySelectorAll(".screen").forEach(s=>s.classList.add("hidden"));
-    canvas.style.display="none";
+/* -------- GAME -------- */
+function reset(){
+    score=0;
+    speed=7;
+    obstacles=[];
+    coinObjects=[];
+    smoke=[];
+    player.y=groundY-player.height;
+    player.velocityY=0;
 }
 
-function buyGold(){
-    if(coins>=20){
-        coins-=20;
-        goldUnlocked=true;
-        currentSkin="gold";
-        document.getElementById("coinDisplay").innerText=coins;
-    }
+function spawnObstacle(){
+    let types=["wall","platform","ball","slideBar"];
+    let t=types[Math.floor(Math.random()*types.length)];
+    obstacles.push({x:canvas.width,type:t});
 }
 
-function selectSkin(name){
-    if(name==="black") currentSkin="black";
-    if(name==="gold" && goldUnlocked) currentSkin="gold";
+function spawnCoin(){
+    coinObjects.push({x:canvas.width,y:groundY-200-Math.random()*100});
 }
-
-document.addEventListener("keydown",e=>{
-    if(e.code==="Space"){
-        if(!player.jumping){
-            player.velY=-18;
-            player.jumping=true;
-        } else if(!player.doubleJump){
-            player.velY=-20;
-            player.doubleJump=true;
-            player.rotation=-360;
-        }
-    }
-    if(e.code==="ArrowDown"){
-        player.sliding=true;
-    }
-});
-
-document.addEventListener("keyup",e=>{
-    if(e.code==="ArrowDown"){
-        player.sliding=false;
-    }
-});
 
 function update(){
-    player.anim+=0.15;
-
-    player.velY+=player.gravity;
-    player.y+=player.velY;
+    player.velocityY+=gravity;
+    player.y+=player.velocityY;
 
     if(player.y>=groundY-player.height){
         player.y=groundY-player.height;
-        player.velY=0;
         player.jumping=false;
         player.doubleJump=false;
         player.rotation=0;
     }
 
-    balls.forEach(b=>{
-        b.x-=speed;
-        let dx = player.x - b.x;
-        let dy = (player.y+player.height) - (groundY-b.r);
-        if(Math.sqrt(dx*dx+dy*dy)<b.r){
-            gameOver();
+    if(player.doubleJump) player.rotation+=20;
+
+    player.legAngle+=0.2;
+    player.armAngle+=0.25;
+
+    obstacles.forEach(o=>o.x-=speed);
+    coinObjects.forEach(c=>c.x-=speed);
+
+    obstacles.forEach(o=>{
+        if(o.type==="wall"){
+            if(player.x+player.width>o.x &&
+               player.x<o.x+60 &&
+               player.y+player.height>groundY-60){
+                endGame();
+            }
+        }
+        if(o.type==="ball"){
+            if(player.x+player.width>o.x &&
+               player.x<o.x+40 &&
+               player.y+player.height>groundY-40){
+                endGame();
+            }
+        }
+        if(o.type==="slideBar"){
+            if(!player.sliding &&
+               player.x+player.width>o.x &&
+               player.x<o.x+80 &&
+               player.y<groundY-80){
+                endGame();
+            }
         }
     });
 
-    gaps.forEach(g=>{
-        g.x-=speed;
-        if(player.x>g.x && player.x<g.x+g.w && player.y>=groundY-player.height){
-            gameOver();
-        }
-    });
-
-    coinObjects.forEach(c=>{
-        c.x-=speed;
-        if(!c.collected &&
-           player.x<c.x+20 &&
+    coinObjects.forEach((c,i)=>{
+        if(player.x<c.x+20 &&
            player.x+player.width>c.x &&
            player.y<c.y+20 &&
            player.y+player.height>c.y){
-            c.collected=true;
             coins++;
+            coinObjects.splice(i,1);
         }
     });
 
-    progress+=speed;
-    if(progress>=levelLength && gameState==="playing"){
-        alert("LEVEL COMPLETE");
-        backMenu();
+    if(gameMode==="game"){
+        if(Math.random()<0.02) spawnObstacle();
+        if(Math.random()<0.015) spawnCoin();
+        score++;
+        if(score%500===0) speed+=0.5;
     }
+
+    smoke.push({x:canvas.width,y:groundY-20,size:20,alpha:1});
+    smoke.forEach(s=>{
+        s.x-=speed/2;
+        s.alpha-=0.01;
+    });
+    smoke=smoke.filter(s=>s.alpha>0);
 }
 
-function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-
-    ctx.fillStyle="#cce6ff";
+function drawCity(){
+    let grad=ctx.createLinearGradient(0,0,0,canvas.height);
+    grad.addColorStop(0,"#5dade2");
+    grad.addColorStop(1,"#ffffff");
+    ctx.fillStyle=grad;
     ctx.fillRect(0,0,canvas.width,canvas.height);
 
-    ctx.fillStyle="#ffffff";
-    ctx.fillRect(0,groundY,canvas.width,150);
+    ctx.fillStyle="#444";
+    for(let i=0;i<canvas.width;i+=200){
+        ctx.fillRect(i,groundY-300,150,300);
+    }
 
-    balls.forEach(b=>{
-        ctx.fillStyle="black";
+    ctx.fillStyle="red";
+    ctx.fillRect(400,groundY-40,80,30);
+
+    ctx.fillStyle="#222";
+    ctx.fillRect(0,groundY,canvas.width,140);
+
+    smoke.forEach(s=>{
+        ctx.fillStyle="rgba(200,200,200,"+s.alpha+")";
         ctx.beginPath();
-        ctx.arc(b.x,groundY-b.r,b.r,0,Math.PI*2);
+        ctx.arc(s.x,s.y,s.size,0,Math.PI*2);
         ctx.fill();
     });
-
-    gaps.forEach(g=>{
-        ctx.fillStyle="#cce6ff";
-        ctx.fillRect(g.x,groundY,g.w,150);
-    });
-
-    coinObjects.forEach(c=>{
-        if(!c.collected){
-            ctx.fillStyle="gold";
-            ctx.beginPath();
-            ctx.arc(c.x,c.y,10,0,Math.PI*2);
-            ctx.fill();
-        }
-    });
-
-    drawPlayer();
 }
 
 function drawPlayer(){
     ctx.save();
     ctx.translate(player.x+20,player.y+45);
     ctx.rotate(player.rotation*Math.PI/180);
-
-    ctx.strokeStyle=currentSkin==="gold"?"gold":"black";
+    ctx.strokeStyle=player.color;
     ctx.lineWidth=6;
 
     if(player.sliding){
         ctx.beginPath();
-        ctx.moveTo(-30,10);
-        ctx.lineTo(30,10);
+        ctx.moveTo(-20,0);
+        ctx.lineTo(20,0);
         ctx.stroke();
-    } else {
+    }else{
         ctx.beginPath();
         ctx.moveTo(0,-30);
         ctx.lineTo(0,30);
         ctx.stroke();
-
-        let legMove=Math.sin(player.anim)*25;
-        ctx.beginPath();
-        ctx.moveTo(0,30);
-        ctx.lineTo(-25,30+legMove);
-        ctx.moveTo(0,30);
-        ctx.lineTo(25,30-legMove);
-        ctx.stroke();
-
-        let armMove=Math.cos(player.anim)*25;
-        ctx.beginPath();
-        ctx.moveTo(0,-10);
-        ctx.lineTo(-30,-10+armMove);
-        ctx.moveTo(0,-10);
-        ctx.lineTo(30,-10-armMove);
-        ctx.stroke();
     }
 
     ctx.beginPath();
-    ctx.arc(0,-45,18,0,Math.PI*2);
+    ctx.arc(0,-45,15,0,Math.PI*2);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0,-10);
+    ctx.lineTo(Math.sin(player.armAngle)*25,10);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0,-10);
+    ctx.lineTo(-Math.sin(player.armAngle)*25,10);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0,30);
+    ctx.lineTo(Math.sin(player.legAngle)*25,70);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0,30);
+    ctx.lineTo(-Math.sin(player.legAngle)*25,70);
     ctx.stroke();
 
     ctx.restore();
 }
 
-function gameOver(){
-    gameState="over";
-    document.getElementById("gameOver").classList.remove("hidden");
+function drawObstacles(){
+    obstacles.forEach(o=>{
+        if(o.type==="wall"){
+            ctx.fillStyle="#8B4513";
+            ctx.fillRect(o.x,groundY-60,60,60);
+        }
+        if(o.type==="platform"){
+            ctx.fillStyle="#555";
+            ctx.fillRect(o.x,groundY-120,100,20);
+        }
+        if(o.type==="ball"){
+            ctx.fillStyle="black";
+            ctx.beginPath();
+            ctx.arc(o.x,groundY-40,20,0,Math.PI*2);
+            ctx.fill();
+        }
+        if(o.type==="slideBar"){
+            ctx.fillStyle="yellow";
+            ctx.fillRect(o.x,groundY-80,80,10);
+        }
+    });
+}
+
+function drawCoins(){
+    coinObjects.forEach(c=>{
+        ctx.fillStyle="gold";
+        ctx.beginPath();
+        ctx.arc(c.x,c.y,12,0,Math.PI*2);
+        ctx.fill();
+    });
+}
+
+function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    drawCity();
+    drawPlayer();
+    drawObstacles();
+    drawCoins();
+    ctx.fillStyle="black";
+    ctx.fillText("Score: "+score,20,40);
+    ctx.fillText("Coins: "+coins,20,70);
 }
 
 function loop(){
-    if(gameState==="playing"||gameState==="tutorial"){
-        update();
-        draw();
-    }
+    if(gameMode==="menu") return;
+    update();
+    draw();
     requestAnimationFrame(loop);
 }
 
-loop();
+function endGame(){
+    gameMode="menu";
+    document.getElementById("gameOverScreen").classList.remove("hidden");
+    document.getElementById("finalScore").innerText="Score: "+score;
+}
+
+function drawPreview(id,color){
+    let c=document.getElementById(id);
+    let x=c.getContext("2d");
+    x.clearRect(0,0,c.width,c.height);
+    x.strokeStyle=color;
+    x.lineWidth=5;
+    x.beginPath();
+    x.moveTo(40,20);
+    x.lineTo(40,80);
+    x.stroke();
+    x.beginPath();
+    x.arc(40,10,10,0,Math.PI*2);
+    x.stroke();
+}
+
 </script>
 </body>
 </html>
