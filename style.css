@@ -45,8 +45,15 @@ button:hover{
     display:flex;
     justify-content:center;
     gap:40px;
+    flex-wrap:wrap;
 }
 
 .skinBox{
     text-align:center;
+}
+
+#shopMessage{
+    margin-top:10px;
+    font-size:18px;
+    color:#003049;
 }
