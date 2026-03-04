@@ -104,6 +104,27 @@ window.addEventListener("resize",resize);
 resize();
 
 /* ============================================================
+   SAVE & LOAD SYSTEM
+============================================================ */
+function saveGame(){
+    localStorage.setItem("coins", coins);
+    localStorage.setItem("ownedSkins", JSON.stringify([...ownedSkins]));
+    localStorage.setItem("currentSkin", currentSkin);
+}
+
+function loadGame(){
+    let savedCoins = localStorage.getItem("coins");
+    let savedSkins = localStorage.getItem("ownedSkins");
+    let savedCurrentSkin = localStorage.getItem("currentSkin");
+
+    if(savedCoins !== null) coins = parseInt(savedCoins);
+    if(savedSkins !== null) ownedSkins = new Set(JSON.parse(savedSkins));
+    if(savedCurrentSkin !== null) currentSkin = savedCurrentSkin;
+}
+
+loadGame();
+
+/* ============================================================
    CONTROLS
 ============================================================ */
 document.addEventListener("keydown",e=>{
@@ -178,6 +199,7 @@ function buySkin(skin, price){
     if(ownedSkins.has(skin)){
         currentSkin=skin;
         msg.innerText="Skin geselecteerd: "+skin.toUpperCase();
+        saveGame();
         return;
     }
 
@@ -187,6 +209,7 @@ function buySkin(skin, price){
         currentSkin=skin;
         document.getElementById("coinDisplay").innerText=coins;
         msg.innerText="Gekocht en geselecteerd: "+skin.toUpperCase();
+        saveGame();
     }else{
         msg.innerText="Te weinig coins!";
     }
@@ -279,6 +302,7 @@ function updateCoins(){
            player.y<c.y+20 &&
            player.y+player.height>c.y){
             coins++;
+            saveGame();
             coinObjects.splice(i,1);
         }
     });
@@ -338,7 +362,7 @@ function drawCity(){
 }
 
 /* ============================================================
-   PLAYER DRAWING (ROTATION CENTERED)
+   PLAYER DRAWING
 ============================================================ */
 function drawPlayer(){
     ctx.save();
@@ -605,51 +629,8 @@ function drawPreviewBlocky(id){
     x.strokeRect(30,15,20,20);
 }
 
-function drawPreviewNeon(id){
-    let c=document.getElementById(id);
-    let x=c.getContext("2d");
-    x.clearRect(0,0,c.width,c.height);
-    x.strokeStyle="#ff1744";
-    x.lineWidth=4;
-    x.beginPath();
-    x.arc(40,20,10,0,Math.PI*2);
-    x.stroke();
-}
+function drawPreviewNe
 
-/* ============================================================
-   DRAW LOOP
-============================================================ */
-function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    drawCity();
-    drawPlayer();
-    drawFireBalls();
-    drawCoins();
-
-    ctx.fillStyle="black";
-    ctx.font="24px Segoe UI";
-    ctx.fillText("Score: "+score,20,40);
-    ctx.fillText("Coins: "+coins,20,70);
-}
-
-/* ============================================================
-   GAME LOOP
-============================================================ */
-function loop(){
-    if(gameMode==="menu") return;
-    update();
-    draw();
-    requestAnimationFrame(loop);
-}
-
-/* ============================================================
-   GAME OVER
-============================================================ */
-function endGame(){
-    gameMode="menu";
-    document.getElementById("gameOverScreen").classList.remove("hidden");
-    document.getElementById("finalScore").innerText="Score: "+score;
-}
 </script>
 </body>
 </html>
