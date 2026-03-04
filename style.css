@@ -1,10 +1,13 @@
 body{
     margin:0;
     overflow:hidden;
-    font-family:'Segoe UI',sans-serif;
-    background:#111;
-    color:white;
+    font-family:Segoe UI, sans-serif;
+    background:linear-gradient(to top,#e0f3ff,#b3e0ff);
     text-align:center;
+}
+
+canvas{
+    display:none;
 }
 
 .screen{
@@ -15,33 +18,23 @@ body{
 
 h1{
     font-size:70px;
-    background:linear-gradient(45deg,gold,orange);
-    -webkit-background-clip:text;
-    -webkit-text-fill-color:transparent;
-}
-
-h2{
-    font-size:40px;
+    color:#003049;
 }
 
 button{
     padding:15px 50px;
-    margin:20px;
+    margin:15px;
     font-size:20px;
     border:none;
-    border-radius:15px;
-    background:linear-gradient(45deg,#ff512f,#dd2476);
+    border-radius:12px;
+    background:#0077b6;
     color:white;
     cursor:pointer;
-    transition:0.2s;
+    transition:.2s;
 }
 
 button:hover{
     transform:scale(1.1);
-}
-
-canvas{
-    display:none;
 }
 
 .hidden{

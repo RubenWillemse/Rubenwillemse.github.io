@@ -7,33 +7,21 @@
 </head>
 <body>
 
-<!-- MENU -->
 <div id="menu" class="screen">
     <h1>URBAN PARKOUR</h1>
     <button onclick="startGame()">PLAY</button>
-    <button onclick="openTutorial()">TUTORIAL</button>
+    <button onclick="startTutorial()">TUTORIAL</button>
     <button onclick="openShop()">SHOP</button>
 </div>
 
-<!-- TUTORIAL -->
-<div id="tutorial" class="screen hidden">
-    <h2>HOW TO PLAY</h2>
-    <p>SPACE = Jump</p>
-    <p>ARROW DOWN = Slide</p>
-    <p>Avoid balls and gaps.</p>
-    <p>Collect coins to unlock skins.</p>
-    <button onclick="backMenu()">BACK</button>
-</div>
-
-<!-- SHOP -->
 <div id="shop" class="screen hidden">
     <h2>SHOP</h2>
     <p>Coins: <span id="coinDisplay">0</span></p>
-    <button onclick="buyGold()">Unlock Gold Skin (20 coins)</button>
+    <button onclick="selectSkin('black')">Black (Free)</button>
+    <button onclick="buyGold()">Gold (20)</button>
     <button onclick="backMenu()">BACK</button>
 </div>
 
-<!-- GAME OVER -->
 <div id="gameOver" class="screen hidden">
     <h2>YOU FELL</h2>
     <button onclick="restart()">RESTART</button>
@@ -46,120 +34,125 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-let gravity = 0.8;
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let groundY = canvas.height - 140;
+let gameState = "menu";
 let speed = 6;
-let groundY;
+let levelLength = 5000;
+let progress = 0;
 
 let coins = 0;
 let goldUnlocked = false;
-let usingGold = false;
-
-let animationFrame = 0;
+let currentSkin = "black";
 
 let player = {
     x:150,
     y:0,
     width:40,
     height:90,
-    velocityY:0,
+    velY:0,
+    gravity:0.8,
     jumping:false,
-    sliding:false
+    doubleJump:false,
+    sliding:false,
+    rotation:0,
+    anim:0
 };
 
-let platforms=[];
-let balls=[];
-let gaps=[];
-let coinObjects=[];
-let gameRunning=false;
+let balls = [];
+let gaps = [];
+let coinObjects = [];
 
-/* ---------- RESIZE ---------- */
+function resetLevel(isTutorial=false){
+    balls=[];
+    gaps=[];
+    coinObjects=[];
+    progress=0;
 
-function resize(){
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    groundY = canvas.height - 150;
+    player.y = groundY - player.height;
+    player.velY = 0;
+    player.jumping=false;
+    player.doubleJump=false;
+    player.rotation=0;
+
+    if(isTutorial){
+        balls.push({x:600,r:25});
+        gaps.push({x:1000,w:150});
+    } else {
+        for(let i=800;i<levelLength;i+=1200){
+            balls.push({x:i,r:25});
+        }
+        for(let i=1500;i<levelLength;i+=2000){
+            gaps.push({x:i,w:150});
+        }
+        for(let i=500;i<levelLength;i+=700){
+            coinObjects.push({x:i,y:groundY-200,collected:false});
+        }
+    }
 }
-window.addEventListener("resize", resize);
-resize();
-
-/* ---------- MENU NAV ---------- */
 
 function startGame(){
-    hideAll();
+    hideScreens();
     canvas.style.display="block";
-    resetLevel();
-    gameRunning=true;
-    requestAnimationFrame(loop);
+    gameState="playing";
+    resetLevel(false);
 }
 
-function openTutorial(){
-    hideAll();
-    document.getElementById("tutorial").classList.remove("hidden");
+function startTutorial(){
+    hideScreens();
+    canvas.style.display="block";
+    gameState="tutorial";
+    resetLevel(true);
 }
 
 function openShop(){
-    hideAll();
+    hideScreens();
     document.getElementById("shop").classList.remove("hidden");
-    document.getElementById("coinDisplay").innerText = coins;
+    document.getElementById("coinDisplay").innerText=coins;
 }
 
 function backMenu(){
-    hideAll();
+    hideScreens();
     document.getElementById("menu").classList.remove("hidden");
+    gameState="menu";
 }
 
-function hideAll(){
+function restart(){
+    document.getElementById("gameOver").classList.add("hidden");
+    startGame();
+}
+
+function hideScreens(){
     document.querySelectorAll(".screen").forEach(s=>s.classList.add("hidden"));
     canvas.style.display="none";
 }
 
-/* ---------- SHOP ---------- */
-
 function buyGold(){
-    if(coins >= 20){
-        coins -= 20;
-        goldUnlocked = true;
-        usingGold = true;
-        alert("Gold Skin Unlocked!");
-    } else {
-        alert("Not enough coins!");
+    if(coins>=20){
+        coins-=20;
+        goldUnlocked=true;
+        currentSkin="gold";
+        document.getElementById("coinDisplay").innerText=coins;
     }
 }
 
-/* ---------- LEVEL ---------- */
-
-function resetLevel(){
-    player.y = groundY - player.height;
-    player.velocityY = 0;
-
-    platforms=[];
-    balls=[];
-    gaps=[];
-    coinObjects=[];
-
-    for(let i=600;i<4000;i+=800){
-        platforms.push({x:i,width:200,height:20});
-    }
-
-    for(let i=1200;i<4000;i+=1500){
-        balls.push({x:i,radius:25});
-    }
-
-    for(let i=2000;i<4000;i+=2000){
-        gaps.push({x:i,width:150});
-    }
-
-    for(let i=500;i<4000;i+=600){
-        coinObjects.push({x:i,y:groundY-200,collected:false});
-    }
+function selectSkin(name){
+    if(name==="black") currentSkin="black";
+    if(name==="gold" && goldUnlocked) currentSkin="gold";
 }
-
-/* ---------- CONTROLS ---------- */
 
 document.addEventListener("keydown",e=>{
-    if(e.code==="Space" && !player.jumping){
-        player.velocityY=-18;
-        player.jumping=true;
+    if(e.code==="Space"){
+        if(!player.jumping){
+            player.velY=-18;
+            player.jumping=true;
+        } else if(!player.doubleJump){
+            player.velY=-20;
+            player.doubleJump=true;
+            player.rotation=-360;
+        }
     }
     if(e.code==="ArrowDown"){
         player.sliding=true;
@@ -172,86 +165,81 @@ document.addEventListener("keyup",e=>{
     }
 });
 
-/* ---------- UPDATE ---------- */
-
 function update(){
+    player.anim+=0.15;
 
-    animationFrame += 0.15;
+    player.velY+=player.gravity;
+    player.y+=player.velY;
 
-    player.velocityY += gravity;
-    player.y += player.velocityY;
-
-    if(player.y >= groundY - player.height){
-        player.y = groundY - player.height;
-        player.velocityY=0;
+    if(player.y>=groundY-player.height){
+        player.y=groundY-player.height;
+        player.velY=0;
         player.jumping=false;
+        player.doubleJump=false;
+        player.rotation=0;
     }
 
-    platforms.forEach(p=>{
-        p.x -= speed;
-    });
-
     balls.forEach(b=>{
-        b.x -= speed;
+        b.x-=speed;
         let dx = player.x - b.x;
-        let dy = (player.y+player.height) - (groundY - b.radius);
-        if(Math.sqrt(dx*dx + dy*dy) < b.radius){
+        let dy = (player.y+player.height) - (groundY-b.r);
+        if(Math.sqrt(dx*dx+dy*dy)<b.r){
             gameOver();
         }
     });
 
     gaps.forEach(g=>{
-        g.x -= speed;
-        if(player.x > g.x && player.x < g.x + g.width &&
-           player.y >= groundY - player.height){
+        g.x-=speed;
+        if(player.x>g.x && player.x<g.x+g.w && player.y>=groundY-player.height){
             gameOver();
         }
     });
 
     coinObjects.forEach(c=>{
-        c.x -= speed;
+        c.x-=speed;
         if(!c.collected &&
-           player.x < c.x+20 &&
-           player.x+player.width > c.x &&
-           player.y < c.y+20 &&
-           player.y+player.height > c.y){
+           player.x<c.x+20 &&
+           player.x+player.width>c.x &&
+           player.y<c.y+20 &&
+           player.y+player.height>c.y){
             c.collected=true;
             coins++;
         }
     });
+
+    progress+=speed;
+    if(progress>=levelLength && gameState==="playing"){
+        alert("LEVEL COMPLETE");
+        backMenu();
+    }
 }
 
-/* ---------- DRAW ---------- */
-
 function draw(){
-
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
-    ctx.fillStyle="#222";
+    ctx.fillStyle="#cce6ff";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    ctx.fillStyle="#ffffff";
     ctx.fillRect(0,groundY,canvas.width,150);
-
-    platforms.forEach(p=>{
-        ctx.fillStyle="#555";
-        ctx.fillRect(p.x,groundY-100,p.width,p.height);
-    });
-
-    gaps.forEach(g=>{
-        ctx.fillStyle="#111";
-        ctx.fillRect(g.x,groundY,g.width,150);
-    });
 
     balls.forEach(b=>{
         ctx.fillStyle="black";
         ctx.beginPath();
-        ctx.arc(b.x,groundY-b.radius,b.radius,0,Math.PI*2);
+        ctx.arc(b.x,groundY-b.r,b.r,0,Math.PI*2);
         ctx.fill();
+    });
+
+    gaps.forEach(g=>{
+        ctx.fillStyle="#cce6ff";
+        ctx.fillRect(g.x,groundY,g.w,150);
     });
 
     coinObjects.forEach(c=>{
         if(!c.collected){
             ctx.fillStyle="gold";
             ctx.beginPath();
-            ctx.arc(c.x, c.y, 10, 0, Math.PI*2);
+            ctx.arc(c.x,c.y,10,0,Math.PI*2);
             ctx.fill();
         }
     });
@@ -260,19 +248,17 @@ function draw(){
 }
 
 function drawPlayer(){
-
     ctx.save();
-    ctx.translate(player.x+20, player.y+45);
+    ctx.translate(player.x+20,player.y+45);
+    ctx.rotate(player.rotation*Math.PI/180);
 
-    let skinColor = usingGold ? "gold" : "white";
-
-    ctx.strokeStyle=skinColor;
-    ctx.lineWidth=5;
+    ctx.strokeStyle=currentSkin==="gold"?"gold":"black";
+    ctx.lineWidth=6;
 
     if(player.sliding){
         ctx.beginPath();
-        ctx.moveTo(-30,0);
-        ctx.lineTo(30,0);
+        ctx.moveTo(-30,10);
+        ctx.lineTo(30,10);
         ctx.stroke();
     } else {
         ctx.beginPath();
@@ -280,54 +266,44 @@ function drawPlayer(){
         ctx.lineTo(0,30);
         ctx.stroke();
 
-        let legMove = Math.sin(animationFrame)*20;
-        let armMove = Math.cos(animationFrame)*20;
-
+        let legMove=Math.sin(player.anim)*25;
         ctx.beginPath();
-        ctx.moveTo(0,0);
-        ctx.lineTo(-20,legMove);
-        ctx.moveTo(0,0);
-        ctx.lineTo(20,-legMove);
+        ctx.moveTo(0,30);
+        ctx.lineTo(-25,30+legMove);
+        ctx.moveTo(0,30);
+        ctx.lineTo(25,30-legMove);
         ctx.stroke();
 
+        let armMove=Math.cos(player.anim)*25;
         ctx.beginPath();
         ctx.moveTo(0,-10);
-        ctx.lineTo(-20,-10+armMove);
+        ctx.lineTo(-30,-10+armMove);
         ctx.moveTo(0,-10);
-        ctx.lineTo(20,-10-armMove);
+        ctx.lineTo(30,-10-armMove);
         ctx.stroke();
     }
 
     ctx.beginPath();
-    ctx.arc(0,-45,15,0,Math.PI*2);
+    ctx.arc(0,-45,18,0,Math.PI*2);
     ctx.stroke();
 
     ctx.restore();
 }
 
-/* ---------- LOOP ---------- */
-
-function loop(){
-    if(!gameRunning) return;
-    update();
-    draw();
-    requestAnimationFrame(loop);
-}
-
-/* ---------- STATES ---------- */
-
 function gameOver(){
-    gameRunning=false;
+    gameState="over";
     document.getElementById("gameOver").classList.remove("hidden");
 }
 
-function restart(){
-    document.getElementById("gameOver").classList.add("hidden");
-    resetLevel();
-    gameRunning=true;
+function loop(){
+    if(gameState==="playing"||gameState==="tutorial"){
+        update();
+        draw();
+    }
     requestAnimationFrame(loop);
 }
 
+loop();
 </script>
 </body>
 </html>
