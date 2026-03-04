@@ -270,29 +270,17 @@ function update(){
 }
 
 function drawCity(){
-    let grad=ctx.createLinearGradient(0,0,0,canvas.height);
-    grad.addColorStop(0,"#5dade2");
-    grad.addColorStop(1,"#ffffff");
-    ctx.fillStyle=grad;
-    ctx.fillRect(0,0,canvas.width,canvas.height);
+    // Mooie schone blauw-witte gradient achtergrond
+    let grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    grad.addColorStop(0, "#4facfe");   // licht blauw boven
+    grad.addColorStop(1, "#ffffff");   // wit onder
+    
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.fillStyle="#444";
-    for(let i=0;i<canvas.width;i+=200){
-        ctx.fillRect(i,groundY-300,150,300);
-    }
-
-    ctx.fillStyle="red";
-    ctx.fillRect(400,groundY-40,80,30);
-
-    ctx.fillStyle="#222";
-    ctx.fillRect(0,groundY,canvas.width,140);
-
-    smoke.forEach(s=>{
-        ctx.fillStyle="rgba(200,200,200,"+s.alpha+")";
-        ctx.beginPath();
-        ctx.arc(s.x,s.y,s.size,0,Math.PI*2);
-        ctx.fill();
-    });
+    // Strakke donkere grond
+    ctx.fillStyle = "#222";
+    ctx.fillRect(0, groundY, canvas.width, 140);
 }
 
 function drawPlayer(){
