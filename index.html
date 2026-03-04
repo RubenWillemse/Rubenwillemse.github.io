@@ -102,6 +102,7 @@ function resize(){
 }
 window.addEventListener("resize",resize);
 resize();
+loadGame();
 
 /* ============================================================
    CONTROLS
@@ -190,6 +191,19 @@ function buySkin(skin, price){
     }else{
         msg.innerText="Te weinig coins!";
     }
+    if(ownedSkins.has(skin)){ currentSkin=skin; msg.innerText="Skin geselecteerd: "+skin.toUpperCase(); saveGame(); // <-- toevoegen return; }
+
+    if(coins>=price){
+    coins-=price;
+    ownedSkins.add(skin);
+    currentSkin=skin;
+    document.getElementById("coinDisplay").innerText=coins;
+    msg.innerText="Gekocht en geselecteerd: "+skin.toUpperCase();
+    saveGame(); // <-- toevoegen
+}
+
+}
+
 }
 
 /* ============================================================
@@ -650,6 +664,25 @@ function endGame(){
     document.getElementById("gameOverScreen").classList.remove("hidden");
     document.getElementById("finalScore").innerText="Score: "+score;
 }
+/* ============================================================
+   SAVE & LOAD SYSTEM
+============================================================ */
+function saveGame(){
+    localStorage.setItem("coins", coins);
+    localStorage.setItem("ownedSkins", JSON.stringify([...ownedSkins]));
+    localStorage.setItem("currentSkin", currentSkin);
+}
+
+function loadGame(){
+    let savedCoins = localStorage.getItem("coins");
+    let savedSkins = localStorage.getItem("ownedSkins");
+    let savedCurrentSkin = localStorage.getItem("currentSkin");
+
+    if(savedCoins !== null) coins = parseInt(savedCoins);
+    if(savedSkins !== null) ownedSkins = new Set(JSON.parse(savedSkins));
+    if(savedCurrentSkin !== null) currentSkin = savedCurrentSkin;
+}
+
 </script>
 </body>
 </html>
