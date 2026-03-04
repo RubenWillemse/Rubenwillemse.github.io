@@ -57,3 +57,23 @@ button:hover{
     font-size:18px;
     color:#003049;
 }
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1; /* canvas onder menu */
+}
+
+.screen {
+    position: absolute;
+    width: 100%;
+    top: 25%;
+    z-index: 5; /* menu boven canvas */
+}
+
+#gameOverScreen,
+#shopScreen,
+#mainMenu,
+#tutorialOverlay {
+    z-index: 10; /* altijd boven canvas */
+}
