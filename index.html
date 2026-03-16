@@ -80,6 +80,7 @@ let speed=7;
 let coins=0;
 let score=0;
 let groundY;
+let highScore = 0;
 
 let ownedSkins = new Set(["default"]);
 let currentSkin = "default";
@@ -634,6 +635,7 @@ function draw(){
     ctx.font="24px Segoe UI";
     ctx.fillText("Score: "+score,20,40);
     ctx.fillText("Coins: "+coins,20,70);
+    ctx.fillText("High Score: " + highScore, 20, 100);
 }
 
 /* ============================================================
@@ -650,10 +652,16 @@ function loop(){
    GAME OVER
 ============================================================ */
 function endGame(){
+    if(score > highScore){
+        highScore = score;
+        saveGame();
+    }
+
     gameMode="menu";
     document.getElementById("gameOverScreen").classList.remove("hidden");
-    document.getElementById("finalScore").innerText="Score: "+score;
+    document.getElementById("finalScore").innerText="Score: " + score + " | High Score: " + highScore;
 }
+
 /* ============================================================
    SAVE & LOAD SYSTEM
 ============================================================ */
@@ -661,6 +669,7 @@ function saveGame(){
     localStorage.setItem("coins", coins);
     localStorage.setItem("ownedSkins", JSON.stringify([...ownedSkins]));
     localStorage.setItem("currentSkin", currentSkin);
+    localStorage.setItem("highScore", highScore);
 }
 
 function loadGame(){
@@ -671,6 +680,8 @@ function loadGame(){
     if(savedCoins !== null) coins = parseInt(savedCoins);
     if(savedSkins !== null) ownedSkins = new Set(JSON.parse(savedSkins));
     if(savedCurrentSkin !== null) currentSkin = savedCurrentSkin;
+    if(localStorage.getItem("highScore") !== null)
+    highScore = parseInt(localStorage.getItem("highScore"));
 }
 
 </script>
