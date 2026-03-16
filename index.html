@@ -46,6 +46,10 @@
             <canvas id="previewGold" width="80" height="120"></canvas>
             <button onclick="buySkin('gold',200)">Gold (200)</button>
         </div>
+        <div id="leaderboard" style="position:absolute; top:20px; right:20px; text-align:right;">
+        <h3>Leaderboard</h3>
+        <ul id="leaderboardList" style="list-style:none; padding:0; margin:0;"></ul>
+</div>
 
     </div>
 
@@ -96,6 +100,19 @@ let fireBalls=[];
 let coinObjects=[];
 let smoke=[];
 
+let leaderboard = [];
+
+function saveLeaderboard(){
+    localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+}
+
+function loadLeaderboard(){
+    let saved = localStorage.getItem("leaderboard");
+    if(saved !== null){
+        leaderboard = JSON.parse(saved);
+    }
+}
+
 function resize(){
     canvas.width=window.innerWidth;
     canvas.height=window.innerHeight;
@@ -134,12 +151,21 @@ function hideAll(){
 }
 
 function startGame(){
+    if(!playerName || playerName.trim() === ""){
+        playerName = prompt("Vul je naam in:");
+        if(!playerName || playerName.trim() === ""){
+            playerName = "Unknown";
+        }
+        saveName();
+    }
+
     hideAll();
     canvas.style.display="block";
     gameMode="game";
     reset();
     requestAnimationFrame(loop);
 }
+
 
 function startTutorial(){
     hideAll();
@@ -660,6 +686,16 @@ function endGame(){
     gameMode="menu";
     document.getElementById("gameOverScreen").classList.remove("hidden");
     document.getElementById("finalScore").innerText="Score: " + score + " | High Score: " + highScore;
+
+leaderboard.push({ name: playerName, score: score });
+
+leaderboard.sort((a,b)=> b.score - a.score);
+
+leaderboard = leaderboard.slice(0, 10);
+
+saveLeaderboard();
+renderLeaderboard();
+
 }
 
 /* ============================================================
@@ -682,6 +718,22 @@ function loadGame(){
     if(savedCurrentSkin !== null) currentSkin = savedCurrentSkin;
     if(localStorage.getItem("highScore") !== null)
     highScore = parseInt(localStorage.getItem("highScore"));
+
+    loadLeaderboard();
+    loadName();
+}
+/* ============================================================
+   USERNAME SAVE & LOAD
+============================================================ */
+function saveName(){
+    localStorage.setItem("playerName", playerName);
+}
+
+function loadName(){
+    let saved = localStorage.getItem("playerName");
+    if(saved !== null){
+        playerName = saved;
+    }
 }
 
 </script>
