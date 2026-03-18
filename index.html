@@ -34,12 +34,12 @@
 
         <div class="skinBox">
             <canvas id="previewNeon" width="80" height="120"></canvas>
-            <button onclick="buySkin('neon red',45)">Neon Red (45)</button>
+            <button onclick="buySkin('neon',45)">Neon Red (45)</button>
         </div>
 
         <div class="skinBox">
             <canvas id="previewGold" width="80" height="120"></canvas>
-            <button onclick="buySkin('neon gold',60)">Neon Gold (60)</button>
+            <button onclick="buySkin('gold',60)">Gold (60)</button>
         </div>
 
     </div>
@@ -345,12 +345,12 @@ function drawPlayer(){
     ctx.translate(player.x+20, player.y+45);
     ctx.rotate(player.rotation * Math.PI/180);
 
-    if(currentSkin==="default")      drawPlayerDefault();
-    else if(currentSkin==="gold")    drawPlayerGold();    
-    else if(currentSkin==="ninja")   drawPlayerNinja();
-    else if(currentSkin==="blocky")  drawPlayerBlocky();
-    else if(currentSkin==="neon")    drawPlayerNeon();
-    else                             drawPlayerDefault();
+    if(currentSkin==="default") drawPlayerDefault();
+    else if(currentSkin==="gold") drawPlayerGold();
+    else if(currentSkin==="ninja") drawPlayerNinja();
+    else if(currentSkin==="blocky") drawPlayerBlocky();
+    else if(currentSkin==="neon") drawPlayerNeon();
+    else drawPlayerDefault();
 
     ctx.restore();
 }
@@ -400,25 +400,18 @@ function drawPlayerDefault(){
 }
 
 function drawPlayerGold(){
-   
-    ctx.shadowColor = "#FFD700";   
-    ctx.shadowBlur = 25;           
-
     ctx.strokeStyle="#ffd700";
     ctx.lineWidth=7;
 
-   
     ctx.beginPath();
     ctx.arc(0,-45,17,0,Math.PI*2);
     ctx.stroke();
 
-  
     ctx.beginPath();
     ctx.moveTo(0,-25);
     ctx.lineTo(0,35);
     ctx.stroke();
 
-   
     ctx.beginPath();
     ctx.moveTo(0,-15);
     ctx.lineTo(Math.sin(player.armAngle)*30,10);
@@ -429,7 +422,6 @@ function drawPlayerGold(){
     ctx.lineTo(-Math.sin(player.armAngle)*30,10);
     ctx.stroke();
 
-    
     ctx.beginPath();
     ctx.moveTo(0,35);
     ctx.lineTo(Math.sin(player.legAngle)*30,75);
@@ -439,11 +431,7 @@ function drawPlayerGold(){
     ctx.moveTo(0,35);
     ctx.lineTo(-Math.sin(player.legAngle)*30,75);
     ctx.stroke();
-
-    
-    ctx.shadowBlur = 0;
 }
-
 
 function drawPlayerNinja(){
     ctx.strokeStyle="#004e98";
