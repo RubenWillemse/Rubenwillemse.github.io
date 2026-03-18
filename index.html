@@ -560,39 +560,34 @@ function drawShopPreviews(){
     drawPreviewGold("previewGold");
 }
 function renderLocker(){
+    console.log("renderLocker aangeroepen");
+
     let container = document.getElementById("lockerList");
+    if(!container){
+        console.log("lockerList niet gevonden");
+        return;
+    }
+
     container.innerHTML = "";
 
-    const skins = [
-        { id:"default", name:"Default", preview:"previewDefault" },
-        { id:"gold", name:"Gold Neon", preview:"previewGold" },
-        { id:"ninja", name:"Blue Ninja", preview:"previewNinja" },
-        { id:"blocky", name:"Blocky", preview:"previewBlocky" },
-        { id:"neon", name:"Red Neon", preview:"previewNeon" }
-    ];
+    const skins = ["default","ninja","neon","gold"];
 
-    skins.forEach(skin=>{
-        if(!ownedSkins.has(skin.id) && skin.id !== "default") return;
+    skins.forEach(skinId=>{
+        let btn = document.createElement("button");
+        btn.textContent = "Skin: " + skinId;
+        btn.style.display = "block";
+        btn.style.margin = "5px auto";
 
-        let div = document.createElement("div");
-        div.className = (currentSkin === skin.id) ? "selected" : "";
-
-        div.onclick = ()=>{
-            currentSkin = skin.id;
-            saveGame();
-            renderLocker();
+        btn.onclick = ()=>{
+            console.log("Klik op:", skinId);
+            currentSkin = skinId;
+            alert("Skin geselecteerd: " + skinId);
         };
 
-        div.innerHTML = `
-            <canvas id="locker_${skin.preview}" width="60" height="60"></canvas>
-            <span><b>${skin.name}</b></span>
-        `;
-
-        container.appendChild(div);
-
-        drawLockerPreview(skin.preview, "locker_" + skin.preview);
+        container.appendChild(btn);
     });
 }
+
 
 
 function drawPreviewDefault(id){
