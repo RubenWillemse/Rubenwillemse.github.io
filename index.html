@@ -29,22 +29,17 @@
 
         <div class="skinBox">
             <canvas id="previewNinja" width="80" height="120"></canvas>
-            <button onclick="buySkin('ninja',50)">Ninja Blue (50)</button>
-        </div>
-
-        <div class="skinBox">
-            <canvas id="previewBlocky" width="80" height="120"></canvas>
-            <button onclick="buySkin('blocky',75)">Blocky Green (75)</button>
+            <button onclick="buySkin('ninja',50)">Ninja Blue (30)</button>
         </div>
 
         <div class="skinBox">
             <canvas id="previewNeon" width="80" height="120"></canvas>
-            <button onclick="buySkin('neon',100)">Neon Red (100)</button>
+            <button onclick="buySkin('neon red',100)">Neon Red (60)</button>
         </div>
 
         <div class="skinBox">
             <canvas id="previewGold" width="80" height="120"></canvas>
-            <button onclick="buySkin('gold',200)">Gold (200)</button>
+            <button onclick="buySkin('neon gold',200)">Neon Gold (45)</button>
         </div>
 
     </div>
@@ -351,7 +346,7 @@ function drawPlayer(){
     ctx.rotate(player.rotation * Math.PI/180);
 
     if(currentSkin==="default") drawPlayerDefault();
-    else if(currentSkin==="gold") drawPlayerGold();
+    else if(currentSkin==="gold") drawPlayerGoldNeon(); 
     else if(currentSkin==="ninja") drawPlayerNinja();
     else if(currentSkin==="blocky") drawPlayerBlocky();
     else if(currentSkin==="neon") drawPlayerNeon();
