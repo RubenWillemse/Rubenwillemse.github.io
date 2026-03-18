@@ -180,6 +180,11 @@ function restartGame(){
     document.getElementById("gameOverScreen").classList.add("hidden");
     startGame();
 }
+function toggleLocker(){
+    let locker = document.getElementById("locker");
+    locker.classList.toggle("hidden");
+    renderLocker();
+}
 
 /* ============================================================
    SHOP LOGIC
@@ -562,6 +567,41 @@ function drawShopPreviews(){
     drawPreviewNeon("previewNeon");
     drawPreviewGold("previewGold");
 }
+function renderLocker(){
+    let container = document.getElementById("lockerList");
+    container.innerHTML = "";
+
+    const skins = [
+        { id:"default", name:"Default", preview:"previewDefault" },
+        { id:"gold", name:"Gold Neon", preview:"previewGold" },
+        { id:"ninja", name:"Blue Ninja", preview:"previewNinja" },
+        { id:"blocky", name:"Blocky", preview:"previewBlocky" },
+        { id:"neon", name:"Red Neon", preview:"previewNeon" }
+    ];
+
+    skins.forEach(skin=>{
+        if(!ownedSkins.has(skin.id) && skin.id !== "default") return;
+
+        let div = document.createElement("div");
+        div.className = (currentSkin === skin.id) ? "selected" : "";
+
+        div.onclick = ()=>{
+            currentSkin = skin.id;
+            saveGame();
+            renderLocker();
+        };
+
+        div.innerHTML = `
+            <canvas id="locker_${skin.preview}" width="60" height="60"></canvas>
+            <span><b>${skin.name}</b></span>
+        `;
+
+        container.appendChild(div);
+
+        drawLockerPreview(skin.preview, "locker_" + skin.preview);
+    });
+}
+
 
 function drawPreviewDefault(id){
     let c=document.getElementById(id);
@@ -629,6 +669,17 @@ function drawPreviewNeon(id){
     x.beginPath();
     x.arc(40,20,10,0,Math.PI*2);
     x.stroke();
+}
+function drawLockerPreview(type, canvasId){
+    let c = document.getElementById(canvasId);
+    let x = c.getContext("2d");
+    x.clearRect(0,0,c.width,c.height);
+
+    if(type === "previewDefault") drawPreviewDefault(canvasId);
+    if(type === "previewGold") drawPreviewGold(canvasId);
+    if(type === "previewNinja") drawPreviewNinja(canvasId);
+    if(type === "previewBlocky") drawPreviewBlocky(canvasId);
+    if(type === "previewNeon") drawPreviewNeon(canvasId);
 }
 
 /* ============================================================
