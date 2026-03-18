@@ -15,6 +15,13 @@
     <button onclick="openShop()">SHOP</button>
 </div>
 
+<button id="lockerButton" onclick="toggleLocker()">LOCKER</button>
+
+<div id="locker" class="hidden">
+    <h3>Locker</h3>
+    <div id="lockerList"></div>
+</div>
+
 <!-- SHOP -->
 <div id="shopScreen" class="screen hidden">
     <h2>SHOP</h2>
@@ -61,6 +68,14 @@
 
 <!-- GAME CANVAS -->
 <canvas id="gameCanvas"></canvas>
+
+
+<div id="locker" class="hidden" style="position:absolute; top:120px; right:20px; width:250px; background:white; padding:10px; border-radius:10px;">
+    <h3>Locker</h3>
+    <div id="lockerList"></div>
+</div>
+
+<button onclick="toggleLocker()" style="position:absolute; top:80px; right:20px;">Locker</button>
 
 <script>
 /* ============================================================

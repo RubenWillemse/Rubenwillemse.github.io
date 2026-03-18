@@ -84,3 +84,46 @@ button:hover{
     color:black;
     z-index:15;
 }
+#lockerButton {
+    position: absolute;
+    top: 180px;
+    right: 20px;
+    padding: 10px 20px;
+    font-size: 18px;
+}
+
+#locker {
+    position: absolute;
+    top: 230px;
+    right: 20px;
+    width: 260px;
+    background: white;
+    border: 2px solid black;
+    border-radius: 10px;
+    padding: 15px;
+}
+
+#locker.hidden {
+    display: none;
+}
+
+#lockerList div {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 8px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    background: white;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#lockerList div.selected {
+    background: #d4ffd4;
+    border-color: #00aa00;
+}
+
+#lockerList canvas {
+    background: transparent;
+}
