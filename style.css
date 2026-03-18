@@ -133,3 +133,10 @@ button:hover{
 #lockerList canvas {
     background: transparent;
 }
+#mainMenu {
+    pointer-events: none;
+}
+
+#mainMenu button {
+    pointer-events: auto;
+}
