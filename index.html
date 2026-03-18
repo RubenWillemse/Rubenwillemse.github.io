@@ -345,12 +345,12 @@ function drawPlayer(){
     ctx.translate(player.x+20, player.y+45);
     ctx.rotate(player.rotation * Math.PI/180);
 
-    if(currentSkin==="default") drawPlayerDefault();
-    else if(currentSkin==="gold") drawPlayerGoldNeon(); 
-    else if(currentSkin==="ninja") drawPlayerNinja();
-    else if(currentSkin==="blocky") drawPlayerBlocky();
-    else if(currentSkin==="neon") drawPlayerNeon();
-    else drawPlayerDefault();
+    if(currentSkin==="default")      drawPlayerDefault();
+    else if(currentSkin==="gold")    drawPlayerGold();    
+    else if(currentSkin==="ninja")   drawPlayerNinja();
+    else if(currentSkin==="blocky")  drawPlayerBlocky();
+    else if(currentSkin==="neon")    drawPlayerNeon();
+    else                             drawPlayerDefault();
 
     ctx.restore();
 }
