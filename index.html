@@ -59,6 +59,7 @@
 
 <!-- TUTORIAL -->
 <div id="tutorialOverlay" class="hidden"></div>
+<button id="tutorialDoneBtn" class="hidden" onclick="finishTutorial()">Terug naar hoofdmenu</button>
 
 <!-- GAME CANVAS -->
 <canvas id="gameCanvas"></canvas>
@@ -68,6 +69,9 @@
     <h3>Locker</h3>
     <div id="lockerList"></div>
 </div>
+
+<canvas id="tutorialCoin" width="40" height="40" class="hidden"></canvas>
+
 
 <script>
 /* ============================================================
@@ -116,7 +120,7 @@ let tutorialActive = false;
 ============================================================ */
 document.addEventListener("keydown", e => {
 
-    // ===== NORMALE CONTROLS (EERST DOEN!) =====
+    // ===== NORMALE CONTROLS (EERST DOEN) =====
     if(e.code==="Space"||e.code==="ArrowUp"){
         if(!player.jumping){
             player.velocityY=-20;
@@ -146,24 +150,28 @@ document.addEventListener("keydown", e => {
             showTutorialText("Top! Nu 2x springen voor een SALTO");
         }
 
-        // Stap 2 → dubbel springen (SALTO)
+        // Stap 2 → dubbel springen
         if(tutorialStep === 2){
-            if(player.doubleJump){   // ✔ werkt ALTIJD
+            if(player.doubleJump){
                 tutorialStep = 3;
                 showTutorialText("Mooi! Dit is een SALTO. Nu uitleg over muntjes…");
 
                 setTimeout(()=>{
                     tutorialStep = 4;
-                    showTutorialText("MUNTJES: Verzamel ze om skins te kopen in de shop!");
-                }, 2000);
+                    showTutorialText("Dit is een MUNTJE! Verzamel ze om skins te kopen.");
+                    
+                    // toon coin
+                    const coinCanvas = document.getElementById("tutorialCoin");
+                    coinCanvas.classList.remove("hidden");
+                    drawTutorialCoin();
+
+                }, 1500);
             }
         }
 
-        // Stap 4 → klaar
-        if(tutorialStep === 4 && (e.code === "Space" || e.code === "Enter")){
-            tutorialActive = false;
-            backMenu();
-            return;
+        // Stap 4 → toon afsluitknop
+        if(tutorialStep === 4){
+            document.getElementById("tutorialDoneBtn").classList.remove("hidden");
         }
     }
 });
@@ -354,6 +362,21 @@ function drawCoins(){
         ctx.fill();
     });
 }
+function drawTutorialCoin(){
+    const c = document.getElementById("tutorialCoin");
+    const ctx2 = c.getContext("2d");
+    ctx2.clearRect(0,0,40,40);
+
+    ctx2.fillStyle = "gold";
+    ctx2.beginPath();
+    ctx2.arc(20,20,18,0,Math.PI*2);
+    ctx2.fill();
+
+    ctx2.fillStyle = "brown";
+    ctx2.font = "20px Arial";
+    ctx2.fillText("C", 13, 27);
+}
+
 
 /* ============================================================
    UPDATE LOOP
@@ -386,6 +409,12 @@ function update(){
         score++;
         if(score%500===0) speed+=0.5;
     }
+}
+function finishTutorial(){
+    tutorialActive = false;
+    document.getElementById("tutorialDoneBtn").classList.add("hidden");
+    document.getElementById("tutorialCoin").classList.add("hidden");
+    backMenu();
 }
 
 /* ============================================================

@@ -141,3 +141,24 @@ button:hover{
 #mainMenu button {
     pointer-events: auto;
 }
+#tutorialCoin {
+    position: absolute;
+    top: 55%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+}
+#tutorialDoneBtn {
+    position: absolute;
+    top: 70%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 15px 40px;
+    font-size: 22px;
+    border-radius: 12px;
+    background: #0077b6;
+    color: white;
+    border: none;
+    cursor: pointer;
+    z-index: 20;
+}
