@@ -116,6 +116,21 @@ let tutorialActive = false;
 ============================================================ */
 document.addEventListener("keydown", e => {
 
+    // ===== NORMALE CONTROLS (EERST DOEN!) =====
+    if(e.code==="Space"||e.code==="ArrowUp"){
+        if(!player.jumping){
+            player.velocityY=-20;
+            player.jumping=true;
+        }else if(!player.doubleJump){
+            player.velocityY=-22;
+            player.doubleJump=true;
+        }
+    }
+
+    if(e.code==="ArrowDown"){
+        player.sliding = true;
+    }
+
     // ===== TUTORIAL LOGICA =====
     if(tutorialActive){
 
@@ -131,14 +146,12 @@ document.addEventListener("keydown", e => {
             showTutorialText("Top! Nu 2x springen voor een SALTO");
         }
 
-        // Stap 2 → dubbel springen
-        if(tutorialStep === 2 && (e.code === "Space" || e.code === "ArrowUp")){
-            if(player.jumping && !player.doubleJump){
-                // tweede sprong → salto
+        // Stap 2 → dubbel springen (SALTO)
+        if(tutorialStep === 2){
+            if(player.doubleJump){   // ✔ werkt ALTIJD
                 tutorialStep = 3;
                 showTutorialText("Mooi! Dit is een SALTO. Nu uitleg over muntjes…");
-                
-                // wacht 2 seconden en ga naar muntjes uitleg
+
                 setTimeout(()=>{
                     tutorialStep = 4;
                     showTutorialText("MUNTJES: Verzamel ze om skins te kopen in de shop!");
@@ -152,21 +165,6 @@ document.addEventListener("keydown", e => {
             backMenu();
             return;
         }
-    }
-
-    // ===== NORMALE CONTROLS =====
-    if(e.code==="Space"||e.code==="ArrowUp"){
-        if(!player.jumping){
-            player.velocityY=-20;
-            player.jumping=true;
-        }else if(!player.doubleJump){
-            player.velocityY=-22;
-            player.doubleJump=true;
-        }
-    }
-
-    if(e.code==="ArrowDown"){
-        player.sliding = true;
     }
 });
 
