@@ -59,7 +59,13 @@
 
 <!-- TUTORIAL -->
 <div id="tutorialOverlay" class="hidden"></div>
-<button id="tutorialDoneBtn" class="hidden" onclick="finishTutorial()">Terug naar hoofdmenu</button>
+
+<canvas id="tutorialCoin" width="40" height="40" class="hidden"></canvas>
+
+<button id="tutorialDoneBtn" class="hidden" onclick="finishTutorial()">
+    Terug naar hoofdmenu
+</button>
+
 
 <!-- GAME CANVAS -->
 <canvas id="gameCanvas"></canvas>
@@ -69,9 +75,6 @@
     <h3>Locker</h3>
     <div id="lockerList"></div>
 </div>
-
-<canvas id="tutorialCoin" width="40" height="40" class="hidden"></canvas>
-
 
 <script>
 /* ============================================================
