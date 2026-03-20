@@ -107,10 +107,54 @@ window.addEventListener("resize",resize);
 resize();
 loadGame();
 
+let tutorialStep = 0;
+let tutorialActive = false;
+
+
 /* ============================================================
    CONTROLS
 ============================================================ */
-document.addEventListener("keydown",e=>{
+document.addEventListener("keydown", e => {
+
+    // ===== TUTORIAL LOGICA =====
+    if(tutorialActive){
+
+        // Stap 0 → springen
+        if(tutorialStep === 0 && (e.code === "Space" || e.code === "ArrowUp")){
+            tutorialStep = 1;
+            showTutorialText("Goed zo! Nu SLIDEN met PIJLTJE OMLAAG");
+        }
+
+        // Stap 1 → sliden
+        if(tutorialStep === 1 && e.code === "ArrowDown"){
+            tutorialStep = 2;
+            showTutorialText("Top! Nu 2x springen voor een SALTO");
+        }
+
+        // Stap 2 → dubbel springen
+        if(tutorialStep === 2 && (e.code === "Space" || e.code === "ArrowUp")){
+            if(player.jumping && !player.doubleJump){
+                // tweede sprong → salto
+                tutorialStep = 3;
+                showTutorialText("Mooi! Dit is een SALTO. Nu uitleg over muntjes…");
+                
+                // wacht 2 seconden en ga naar muntjes uitleg
+                setTimeout(()=>{
+                    tutorialStep = 4;
+                    showTutorialText("MUNTJES: Verzamel ze om skins te kopen in de shop!");
+                }, 2000);
+            }
+        }
+
+        // Stap 4 → klaar
+        if(tutorialStep === 4 && (e.code === "Space" || e.code === "Enter")){
+            tutorialActive = false;
+            backMenu();
+            return;
+        }
+    }
+
+    // ===== NORMALE CONTROLS =====
     if(e.code==="Space"||e.code==="ArrowUp"){
         if(!player.jumping){
             player.velocityY=-20;
@@ -120,11 +164,12 @@ document.addEventListener("keydown",e=>{
             player.doubleJump=true;
         }
     }
-    if(e.code==="ArrowDown") player.sliding=true;
+
+    if(e.code==="ArrowDown"){
+        player.sliding = true;
+    }
 });
-document.addEventListener("keyup",e=>{
-    if(e.code==="ArrowDown") player.sliding=false;
-});
+
 
 /* ============================================================
    MENU FUNCTIONS
@@ -145,14 +190,21 @@ function startGame(){
 
 function startTutorial(){
     hideAll();
-    canvas.style.display="block";
-    gameMode="tutorial";
+    canvas.style.display = "block";
+    gameMode = "tutorial";
+    tutorialActive = true;
+    tutorialStep = 0;
     reset();
-    const t=document.getElementById("tutorialOverlay");
-    t.classList.remove("hidden");
-    t.innerText="Druk SPATIE om te springen";
+    showTutorialText("Druk SPATIE of PIJLTJE OMHOOG om te springen");
     requestAnimationFrame(loop);
 }
+
+function showTutorialText(text){
+    const t = document.getElementById("tutorialOverlay");
+    t.classList.remove("hidden");
+    t.innerText = text;
+}
+
 
 function openShop(){
     hideAll();
