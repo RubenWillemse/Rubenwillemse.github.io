@@ -117,6 +117,12 @@ loadGame();
 let tutorialStep = 0;
 let tutorialActive = false;
 
+player.hitbox = {
+    x: 0,
+    y: 0,
+    width: player.width,
+    height: player.height
+};
 
 /* ============================================================
    CONTROLS
@@ -878,8 +884,32 @@ function loop(){
     if(gameMode==="menu") return;
     update();
     draw();
+    updatePlayerHitbox();
     requestAnimationFrame(loop);
 }
+function updatePlayerHitbox(){
+    // teken-offsets van jouw drawPlayer()
+    const offsetX = 20;
+    const offsetY = 45;
+
+    if(player.sliding){
+        // SLIDE HITBOX (lager en langer)
+        player.hitbox.width = player.width + 40;
+        player.hitbox.height = player.height * 0.4;
+
+        player.hitbox.x = player.x + offsetX - 20; 
+        player.hitbox.y = player.y + offsetY + player.height * 0.6;
+    } else {
+        // NORMALE HITBOX
+        player.hitbox.width = player.width;
+        player.hitbox.height = player.height;
+
+        player.hitbox.x = player.x + offsetX - 20;
+        player.hitbox.y = player.y + offsetY - player.height;
+    }
+}
+
+
 
 /* ============================================================
    GAME OVER
