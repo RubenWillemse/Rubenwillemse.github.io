@@ -145,38 +145,59 @@ document.addEventListener("keydown", e => {
     }
 
     // ===== TUTORIAL LOGICA =====
-    if(tutorialActive){
+if(tutorialActive){
 
-        // Stap 0 → springen
-        if(tutorialStep === 0 && (e.code === "Space" || e.code === "ArrowUp")){
-            tutorialStep = 1;
-            showTutorialText("Goed zo! Nu SLIDEN met PIJLTJE OMLAAG");
-        }
+    // Stap 0 → springen
+    if(tutorialStep === 0 && (e.code === "Space" || e.code === "ArrowUp")){
+        tutorialStep = 1;
+        showTutorialText("Goed zo! Nu SLIDEN met PIJLTJE OMLAAG");
+    }
 
-        // Stap 1 → sliden
-        if(tutorialStep === 1 && e.code === "ArrowDown"){
-            tutorialStep = 2;
-            showTutorialText("Top! Nu 2x springen voor een SALTO");
-        }
+    // Stap 1 → sliden
+    if(tutorialStep === 1 && e.code === "ArrowDown"){
+        tutorialStep = 2;
+        showTutorialText("Top! Nu 2x springen voor een SALTO");
+    }
 
-        // Stap 2 → dubbel springen
-        if(tutorialStep === 2){
-            if(player.doubleJump){
-                tutorialStep = 3;
-                showTutorialText("Mooi! Dit is een SALTO. Nu uitleg over muntjes…");
+    // Stap 2 → dubbel springen (salto)
+    if(tutorialStep === 2){
+        if(player.doubleJump){
+            tutorialStep = 3;
+            showTutorialText("Mooi! Dit is een SALTO. Nu uitleg over muntjes…");
 
+            setTimeout(()=>{
+                tutorialStep = 4;
+                showTutorialText("Muntjes kun je in het spel verzamelen om skins te kopen!");
+
+                // toon coin
+                const coinCanvas = document.getElementById("tutorialCoin");
+                coinCanvas.classList.remove("hidden");
+                drawTutorialCoin();
+
+                // Na 2 sec → bommen uitleg
                 setTimeout(()=>{
-                    tutorialStep = 4;
-                    showTutorialText("Muntjes kun je in het spel verzamelen om skins te kopen!");
-                    
-                    // toon coin
-                    const coinCanvas = document.getElementById("tutorialCoin");
-                    coinCanvas.classList.remove("hidden");
-                    drawTutorialCoin();
-                    
-                }, 1500);
-            }
+                    tutorialStep = 5;
+                    showTutorialText("In het spel moet je BOMMEN ontwijken, anders ben je AF!");
+                }, 2000);
+
+            }, 1500);
         }
+    }
+
+    // Stap 5 → na bommen uitleg → eindknop tonen
+    if(tutorialStep === 5){
+        setTimeout(()=>{
+            tutorialStep = 6;
+            document.getElementById("tutorialDoneBtn").classList.remove("hidden");
+        }, 2000);
+    }
+
+    // Stap 6 → tutorial klaar
+    if(tutorialStep === 6 && (e.code === "Space" || e.code === "Enter")){
+        tutorialActive = false;
+        backMenu();
+        return;
+    }
 
         // Stap 4 → toon afsluitknop
         if(tutorialStep === 4){
