@@ -916,6 +916,17 @@ function loadGame(){
     if(localStorage.getItem("highScore") !== null)
     highScore = parseInt(localStorage.getItem("highScore"));
 }
+document.addEventListener("keydown", e => {
+    if(e.code === "ArrowDown"){
+        player.sliding = true;
+    }
+});
+
+document.addEventListener("keyup", e => {
+    if(e.code === "ArrowDown"){
+        player.sliding = false;
+    }
+});
 
 </script>
 </body>
