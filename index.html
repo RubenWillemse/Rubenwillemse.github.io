@@ -117,6 +117,9 @@ loadGame();
 let tutorialStep = 0;
 let tutorialActive = false;
 
+let bridges = [];
+let groundObstacles = [];
+
 
 /* ============================================================
    CONTROLS
@@ -405,12 +408,21 @@ function update(){
     updateFireBalls();
     updateCoins();
     checkFireBallCollision();
+    updateBridges();
+    drawBridges();
+    checkBridgeCollision();
+
+    updateGroundObstacles();
+    drawGroundObstacles();
+    checkObstacleCollision();
 
     if(gameMode==="game"){
         if(Math.random()<0.02) spawnFireBall();
         if(Math.random()<0.015) spawnCoin();
         score++;
         if(score%500===0) speed+=0.5;
+        if(Math.random() < 0.003) spawnBridge();
+        if(Math.random() < 0.005) spawnGroundObstacle();
     }
 }
 function finishTutorial(){
@@ -430,6 +442,95 @@ function drawCity(){
     ctx.fillStyle="#222";
     ctx.fillRect(0,groundY,canvas.width,140);
 }
+function spawnBridge(){
+    bridges.push({
+        x: canvas.width,
+        y: groundY - 120,   // hoogte van de brug
+        width: 200,
+        height: 20
+    });
+}
+function updateBridges(){
+    bridges.forEach((b, i) => {
+        b.x -= speed;
+
+        if(b.x + b.width < 0){
+            bridges.splice(i, 1);
+        }
+    });
+}
+function drawBridges(){
+    bridges.forEach(b => {
+        ctx.fillStyle = "#654321"; // bruin hout
+        ctx.fillRect(b.x, b.y, b.width, b.height);
+    });
+}
+function checkBridgeCollision(){
+    let onBridge = false;
+
+    bridges.forEach(b => {
+        // horizontale overlap
+        if(player.x + player.width > b.x && player.x < b.x + b.width){
+
+            // speler valt op de brug
+            if(player.y + player.height >= b.y && player.y + player.height <= b.y + 20 && player.velocityY >= 0){
+                player.y = b.y - player.height;
+                player.velocityY = 0;
+                player.jumping = false;
+                player.doubleJump = false;
+                onBridge = true;
+            }
+        }
+    });
+
+    // als je niet op een brug staat → normale grond
+    if(!onBridge){
+        if(player.y + player.height < groundY){
+            player.velocityY += gravity;
+        } else {
+            player.y = groundY - player.height;
+            player.jumping = false;
+            player.doubleJump = false;
+        }
+    }
+}
+function spawnGroundObstacle(){
+    groundObstacles.push({
+        x: canvas.width,
+        y: groundY - 40,
+        width: 40,
+        height: 40,
+        speed: speed
+    });
+}
+function updateGroundObstacles(){
+    groundObstacles.forEach((o, i) => {
+        o.x -= o.speed;
+
+        if(o.x + o.width < 0){
+            groundObstacles.splice(i, 1);
+        }
+    });
+}
+function drawGroundObstacles(){
+    groundObstacles.forEach(o => {
+        ctx.fillStyle = "#222";
+        ctx.fillRect(o.x, o.y, o.width, o.height);
+    });
+}
+function checkObstacleCollision(){
+    groundObstacles.forEach(o => {
+        if(player.x < o.x + o.width &&
+           player.x + player.width > o.x &&
+           player.y + player.height > o.y &&
+           player.y < o.y + o.height){
+
+            endGame();
+        }
+    });
+}
+
+
 
 /* ============================================================
    PLAYER DRAWING (ROTATION CENTERED)
