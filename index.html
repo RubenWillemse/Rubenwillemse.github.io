@@ -439,64 +439,116 @@ function drawPlayer(){
     ctx.translate(player.x+20, player.y+45);
     ctx.rotate(player.rotation * Math.PI/180);
 
-    if(currentSkin==="default") drawPlayerDefault();
-    else if(currentSkin==="gold") drawPlayerGold();
-    else if(currentSkin==="ninja") drawPlayerNinja();
-    else if(currentSkin==="blocky") drawPlayerBlocky();
-    else if(currentSkin==="neon") drawPlayerNeon();
-    else drawPlayerDefault();
+    const sliding = player.sliding;
+
+    if(currentSkin==="default") drawPlayerDefault(sliding);
+    else if(currentSkin==="gold") drawPlayerGold(sliding);
+    else if(currentSkin==="ninja") drawPlayerNinja(sliding);
+    else if(currentSkin==="blocky") drawPlayerBlocky(sliding);
+    else if(currentSkin==="neon") drawPlayerNeon(sliding);
+    else drawPlayerDefault(sliding);
 
     ctx.restore();
 }
 
+
 /* ============================================================
    SKIN FUNCTIONS
 ============================================================ */
-function drawPlayerDefault(){
-    ctx.strokeStyle="black";
-    ctx.lineWidth=6;
+function drawPlayerDefault(sliding){
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 6;
 
-    if(player.sliding){
+    if(sliding){
+        // --- SLIDE HOUDING ---
+        
+        // lichaam horizontaal
         ctx.beginPath();
-        ctx.moveTo(-20,0);
-        ctx.lineTo(20,0);
+        ctx.moveTo(-40, 20);
+        ctx.lineTo(40, 20);
         ctx.stroke();
-    } else {
+
+        // hoofd iets lager
         ctx.beginPath();
-        ctx.moveTo(0,-30);
-        ctx.lineTo(0,30);
+        ctx.arc(-45, 10, 17, 0, Math.PI * 2);
         ctx.stroke();
+
+        // armen naar achteren
+        ctx.beginPath();
+        ctx.moveTo(-10, 20);
+        ctx.lineTo(-40, 35);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(-10, 20);
+        ctx.lineTo(-40, 5);
+        ctx.stroke();
+
+        // benen gestrekt naar achteren
+        ctx.beginPath();
+        ctx.moveTo(40, 20);
+        ctx.lineTo(70, 30);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(40, 20);
+        ctx.lineTo(70, 10);
+        ctx.stroke();
+
+        return;
     }
 
+    // --- NORMALE STAANDE HOUDING ---
     ctx.beginPath();
-    ctx.arc(0,-45,15,0,Math.PI*2);
+    ctx.arc(0, -45, 17, 0, Math.PI * 2);
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.moveTo(0,-10);
-    ctx.lineTo(Math.sin(player.armAngle)*25,10);
+    ctx.moveTo(0, -25);
+    ctx.lineTo(0, 35);
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.moveTo(0,-10);
-    ctx.lineTo(-Math.sin(player.armAngle)*25,10);
+    ctx.moveTo(0, -15);
+    ctx.lineTo(Math.sin(player.armAngle) * 30, 10);
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.moveTo(0,30);
-    ctx.lineTo(Math.sin(player.legAngle)*25,70);
+    ctx.moveTo(0, -15);
+    ctx.lineTo(-Math.sin(player.armAngle) * 30, 10);
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.moveTo(0,30);
-    ctx.lineTo(-Math.sin(player.legAngle)*25,70);
+    ctx.moveTo(0, 35);
+    ctx.lineTo(Math.sin(player.legAngle) * 30, 75);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0, 35);
+    ctx.lineTo(-Math.sin(player.legAngle) * 30, 75);
     ctx.stroke();
 }
 
-function drawPlayerGold(){
+function drawPlayerGold(sliding){
     ctx.strokeStyle="#ffd700";
     ctx.lineWidth=7;
 
+    if(sliding){
+        // SLIDE HOUDING: lichaam horizontaal
+        ctx.beginPath();
+        ctx.moveTo(-40, 20);
+        ctx.lineTo(40, 20);
+        ctx.stroke();
+
+        // hoofd iets lager
+        ctx.beginPath();
+        ctx.arc(-45, 10, 17, 0, Math.PI*2);
+        ctx.stroke();
+
+        return;
+    }
+
+    // --- NORMALE HOUDING ---
     ctx.beginPath();
     ctx.arc(0,-45,17,0,Math.PI*2);
     ctx.stroke();
@@ -527,7 +579,34 @@ function drawPlayerGold(){
     ctx.stroke();
 }
 
-function drawPlayerNinja(){
+
+function drawPlayerNinja(sliding){
+    if(sliding){
+        ctx.strokeStyle="#004e98";
+        ctx.lineWidth=8;
+
+        // lichaam horizontaal
+        ctx.beginPath();
+        ctx.moveTo(-40, 20);
+        ctx.lineTo(40, 20);
+        ctx.stroke();
+
+        // hoofd
+        ctx.beginPath();
+        ctx.arc(-45, 10, 16, 0, Math.PI*2);
+        ctx.stroke();
+
+        // rode band
+        ctx.strokeStyle="#ff0000";
+        ctx.beginPath();
+        ctx.moveTo(-60, 5);
+        ctx.lineTo(-30, 5);
+        ctx.stroke();
+
+        return;
+    }
+
+    // normale ninja
     ctx.strokeStyle="#004e98";
     ctx.lineWidth=8;
 
@@ -568,11 +647,20 @@ function drawPlayerNinja(){
     ctx.stroke();
 }
 
-function drawPlayerBlocky(){
+
+function drawPlayerBlocky(sliding){
     ctx.fillStyle="#2ecc71";
     ctx.strokeStyle="#145a32";
     ctx.lineWidth=4;
 
+    if(sliding){
+        // horizontale blok
+        ctx.fillRect(-40, 10, 80, 25);
+        ctx.strokeRect(-40, 10, 80, 25);
+        return;
+    }
+
+    // normale blocky
     ctx.fillRect(-15,-55,30,30);
     ctx.strokeRect(-15,-55,30,30);
 
@@ -592,13 +680,28 @@ function drawPlayerBlocky(){
     ctx.strokeRect(0,25,12,35);
 }
 
-function drawPlayerNeon(){
+function drawPlayerNeon(sliding){
     ctx.save();
     ctx.shadowColor="red";
     ctx.shadowBlur=15;
     ctx.strokeStyle="#ff1744";
     ctx.lineWidth=5;
 
+    if(sliding){
+        ctx.beginPath();
+        ctx.moveTo(-40, 20);
+        ctx.lineTo(40, 20);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(-45, 10, 15, 0, Math.PI*2);
+        ctx.stroke();
+
+        ctx.restore();
+        return;
+    }
+
+    // normale neon
     ctx.beginPath();
     ctx.arc(0,-45,15,0,Math.PI*2);
     ctx.stroke();
